@@ -2,7 +2,8 @@
 import express from "express";
 import OpenAI from "openai";
 import GeneratedImage from "../models/GeneratedImage.js";
-
+import * as dotenv from "dotenv";
+dotenv.config();
 const router = express.Router();
 
 // Instantiate the OpenAI client using your API key

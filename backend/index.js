@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/auth.js"; // Import your auth routes
-
+import openaiRoutes from "./routes/openai.js"; // Import your OpenAI routes
 dotenv.config();
 
 const app = express();
