@@ -17,6 +17,7 @@ app.get("/", (req, res) => {
 
 // Mount the auth routes on the /api/auth path
 app.use("/api/auth", authRoutes);
+app.use("/api/openai", openaiRoutes); // Mount the OpenAI routes on the /api/openai path
 
 // Retrieve the MongoDB connection string and port from the environment variables
 const DB = process.env.MONGO_URI;
