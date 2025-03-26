@@ -24,7 +24,7 @@ app.use("/api/profilepic", profilepic); // Mount the profile picture routes on t
 
 // Retrieve the MongoDB connection string and port from the environment variables
 const DB = process.env.MONGO_URI;
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 27017;
 
 const startServer = async () => {
   try {
