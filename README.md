@@ -1,1 +1,3 @@
-# qrcode
+# AesthetiQR
+
+YOUR GO-TO QR CODE GENERATOR ;)
