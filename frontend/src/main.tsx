@@ -9,6 +9,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Router>
       <Routes>
+        <Route path="/" element={<Login />} />  {/* will later be the home page :) */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

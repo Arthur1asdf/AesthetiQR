@@ -14,7 +14,7 @@ const Register = () => {
     setError(""); // Clear errors before making a request
 
     try {
-      const response = await fetch("http://localhost:8080/register", { // Ensure this URL is correct
+      const response = await fetch("http://localhost:3000/register", { // Ensure this URL is correct
         method: "POST",
         headers: {
           "Content-Type": "application/json",
