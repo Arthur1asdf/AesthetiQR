@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const Register = () => {
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
+  const [name, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -14,12 +14,12 @@ const Register = () => {
     setError(""); // Clear errors before making a request
 
     try {
-      const response = await fetch("http://localhost:3000/register", { // Ensure this URL is correct
+      const response = await fetch("http://localhost:3000/api/auth/register", { // Ensure this URL is correct
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, username, password }),
+        body: JSON.stringify({name, email, password }),
       });
 
       if (!response.ok) {
@@ -71,7 +71,7 @@ const Register = () => {
                 type="text"
                 placeholder="Enter your username"
                 className="bg-transparent w-full outline-none"
-                value={username}
+                value={name}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
