@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { FaArrowLeft, FaQrcode, FaPencilAlt, FaPen, FaEraser, FaFont, FaUndo, FaShapes } from "react-icons/fa";
+import { FaArrowLeft, FaQrcode, FaPencilAlt, FaPen, FaEraser, FaFont, FaUndo, FaShapes, FaSave } from "react-icons/fa";
 
 const Whiteboard: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -13,6 +13,7 @@ const Whiteboard: React.FC = () => {
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
   //for tracking the image data of the canvas
   const [previewImage, setPreviewImage] = useState<ImageData | null>(null);
+  const [shapeType, setShapeType] = useState<"rectangle" | "circle">("rectangle");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -71,7 +72,6 @@ const Whiteboard: React.FC = () => {
     if (tool === "shapes") {
       if (!startPos || !previewImage) return;
 
-      // Restore base image for preview
       ctx.putImageData(previewImage, 0, 0);
 
       const currentX = e.nativeEvent.offsetX;
@@ -84,7 +84,17 @@ const Whiteboard: React.FC = () => {
       ctx.lineWidth = lineWidth;
       ctx.globalCompositeOperation = "source-over";
 
-      ctx.strokeRect(startPos.x, startPos.y, width, height);
+      if (shapeType === "rectangle") {
+        ctx.strokeRect(startPos.x, startPos.y, width, height);
+      } else if (shapeType === "circle") {
+        const centerX = startPos.x + width / 2;
+        const centerY = startPos.y + height / 2;
+        const radiusX = Math.abs(width / 2);
+        const radiusY = Math.abs(height / 2);
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+        ctx.stroke();
+      }
     } else if (drawing) {
       ctx.strokeStyle = color;
       ctx.lineWidth = lineWidth;
@@ -100,6 +110,16 @@ const Whiteboard: React.FC = () => {
       ctx.stroke();
     }
   };
+  const saveAsImage = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const image = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = "whiteboard.png"; // name of the downloaded file
+    link.click();
+  };
 
   const stopDrawing = (e: React.MouseEvent) => {
     const canvas = canvasRef.current;
@@ -108,18 +128,28 @@ const Whiteboard: React.FC = () => {
     if (!ctx) return;
 
     if (tool === "shapes" && startPos) {
+      saveState();
+
       const endX = e.nativeEvent.offsetX;
       const endY = e.nativeEvent.offsetY;
-
       const width = endX - startPos.x;
       const height = endY - startPos.y;
 
-      // Finalize the shape
-      saveState();
       ctx.strokeStyle = color;
       ctx.lineWidth = lineWidth;
       ctx.globalCompositeOperation = "source-over";
-      ctx.strokeRect(startPos.x, startPos.y, width, height);
+
+      if (shapeType === "rectangle") {
+        ctx.strokeRect(startPos.x, startPos.y, width, height);
+      } else if (shapeType === "circle") {
+        const centerX = startPos.x + width / 2;
+        const centerY = startPos.y + height / 2;
+        const radiusX = Math.abs(width / 2);
+        const radiusY = Math.abs(height / 2);
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+        ctx.stroke();
+      }
 
       setStartPos(null);
       setPreviewImage(null);
@@ -193,11 +223,14 @@ const Whiteboard: React.FC = () => {
           <button onClick={() => setTool("text")} className="p-2 hover:bg-gray-300 rounded">
             <FaFont />
           </button>
+          <button onClick={() => setTool("shapes")} className="p-2 hover:bg-gray-300 rounded">
+            <FaShapes />
+          </button>
           <button onClick={undo} className="p-2 hover:bg-gray-300 rounded">
             <FaUndo />
           </button>
-          <button onClick={() => setTool("shapes")} className="p-2 hover:bg-gray-300 rounded">
-            <FaShapes />
+          <button onClick={saveAsImage} className="p-2 hover:bg-gray-300 rounded">
+            <FaSave />
           </button>
         </div>
         <canvas
@@ -216,6 +249,15 @@ const Whiteboard: React.FC = () => {
         <button onClick={clearCanvas} className="bg-red-500 text-white px-4 py-1 rounded">
           Clear
         </button>
+        {tool === "shapes" && (
+          <div className="ml-4 flex gap-2 items-center">
+            <label className="text-sm font-medium text-gray-800">Shape:</label>
+            <select value={shapeType} onChange={(e) => setShapeType(e.target.value as "rectangle" | "circle")} className="border p-1 rounded">
+              <option value="rectangle">Rectangle</option>
+              <option value="circle">Circle</option>
+            </select>
+          </div>
+        )}
       </div>
     </div>
   );
