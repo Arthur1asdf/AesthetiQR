@@ -7,8 +7,14 @@ const QRcodeSchema = new mongoose.Schema({
     required: true,
   },
   imageUrl: {
+    // Corresponds to qrcodeurl from the route
     type: String,
     required: true,
+  },
+  qrcodeName: {
+    // New field for the name
+    type: String,
+    required: false, // or true if you want it to be required
   },
   uploadedAt: {
     type: Date,
