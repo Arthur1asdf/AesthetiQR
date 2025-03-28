@@ -20,4 +20,27 @@ router.post("/addQrcode", async (req, res) => {
   }
 });
 
+router.get("/searchQrcode", async (req, res) => {
+  // Get search parameters from the query string
+  const { userId, qrcodeName } = req.query;
+  let filter = {};
+
+  // If a userId is provided, filter by that user
+  if (userId) {
+    filter.user = userId;
+  }
+
+  // If a qrcodeName is provided, do a case-insensitive regex search
+  if (qrcodeName) {
+    filter.qrcodeName = { $regex: new RegExp(qrcodeName, "i") };
+  }
+
+  try {
+    const qrcodes = await QRCode.find(filter);
+    res.status(200).json({ success: true, data: qrcodes });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
