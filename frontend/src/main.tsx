@@ -5,6 +5,7 @@ import Login from "./pages/login";
 import Register from "./pages/register";
 import Whiteboard from "./pages/whiteboard";
 import AIPromptGenerator from "./pages/prompt";
+import QRCodeGenerator from "./pages/qrCodeGenerator";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -16,7 +17,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/register" element={<Register />} />
         <Route path = "/whiteboard" element ={<Whiteboard />} />
         <Route path ="/prompt" element ={<AIPromptGenerator/>}/>
-      
+        <Route path="/qrcode" element={<QRCodeGenerator />} />
       </Routes>
     </Router>
   </React.StrictMode>
