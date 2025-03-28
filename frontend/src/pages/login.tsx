@@ -53,13 +53,7 @@ const Login = () => {
             <label className="block text-sm">USERNAME:</label>
             <div className="flex items-center bg-pink-300 text-black p-2 rounded">
               <FaUser className="mr-2" />
-              <input
-                type="text"
-                placeholder="Enter your username"
-                className="bg-transparent w-full outline-none"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <input type="text" placeholder="Enter your username" className="bg-transparent w-full outline-none" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
           </div>
 
@@ -67,20 +61,11 @@ const Login = () => {
             <label className="block text-sm">PASSWORD:</label>
             <div className="flex items-center bg-pink-300 text-black p-2 rounded">
               <FaLock className="mr-2" />
-              <input
-                type="password"
-                placeholder="Enter your password"
-                className="bg-transparent w-full outline-none"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <input type="password" placeholder="Enter your password" className="bg-transparent w-full outline-none" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 rounded-lg"
-          >
+          <button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 rounded-lg">
             LOGIN
           </button>
         </form>
