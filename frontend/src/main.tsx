@@ -7,9 +7,13 @@ import Register from "./pages/register";
 import Whiteboard from "./pages/whiteboard";
 import AIPromptGenerator from "./pages/prompt";
 import QRCodeGenerator from "./pages/qrCodeGenerator";
-import AccountPage from "./pages/account";
 import LibraryPage from "./pages/library";
+import LoggedInHomePage from "./pages/loggedinhomepage";
+import Profile from "./pages/profile";
+
 import "./index.css";
+
+
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -22,14 +26,16 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         {/* Have Derian work on this */}
         <Route path="/register" element={<Register />} />
         {/* Arthur change account stuff*/}
-        <Route path="/account" element={<AccountPage />} />
         {/*connect library stuff - Arthur */}
         <Route path="/library" element={<LibraryPage />} />
         {/* finished */}
         <Route path="/whiteboard" element={<Whiteboard />} />
         {/* ai prompt and qr code is going to be merged into one ANNA working on it */}
+        <Route path="/profile" element={<Profile />} />
         <Route path="/prompt" element={<AIPromptGenerator />} />
         <Route path="/qrcode" element={<QRCodeGenerator />} />
+        <Route path="/loggedinhomepage" element={<LoggedInHomePage />} />
+       
       </Routes>
     </Router>
   </React.StrictMode>

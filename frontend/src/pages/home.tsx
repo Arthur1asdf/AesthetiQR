@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FiSearch, FiUser, FiLogIn, FiPlus, FiArrowRight } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
 
 // Define TypeScript interfaces
 interface Template {
@@ -8,11 +9,6 @@ interface Template {
   title: string;
   description: string;
 }
-
-// Noise texture CSS (add this to your global CSS file)
-// .bg-noise {
-//   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.20'/%3E%3C/svg%3E");
-// }
 
 const TemplateCard = ({ 
   id, 
@@ -31,9 +27,7 @@ const TemplateCard = ({
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.3, delay: id * 0.1 }}
-    className={`relative overflow-hidden p-5 rounded-2xl cursor-pointer group ${
-      selected ? 'ring-2 ring-white' : ''
-    }`}
+    className={`relative overflow-hidden p-5 rounded-2xl cursor-pointer group ${selected ? 'ring-2 ring-white' : ''}`}
     onClick={onClick}
   >
     <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-blue-400 to-pink-500 opacity-70 group-hover:opacity-90 transition-opacity" />
@@ -66,6 +60,8 @@ const HomePage = () => {
   const [loggedIn, setLoggedIn] = useState<boolean>(false);
   const [selectedTemplates, setSelectedTemplates] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const navigate = useNavigate(); // Initialize navigate hook
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1500);
@@ -149,7 +145,7 @@ const HomePage = () => {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setLoggedIn(true)}
+                  onClick={() => navigate("/register")} // Navigate to Register page
                   className="bg-transparent hover:bg-white/10 px-6 py-2 rounded-full border border-white/20"
                 >
                   Sign Up
@@ -157,7 +153,7 @@ const HomePage = () => {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setLoggedIn(true)}
+                  onClick={() => navigate("/login")} // Navigate to Login page
                   className="bg-white hover:bg-gray-100 text-purple-900 px-6 py-2 rounded-full font-medium"
                 >
                   Log In

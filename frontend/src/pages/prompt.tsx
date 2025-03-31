@@ -13,34 +13,39 @@ const AIPromptGenerator: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-pink-300">
-      <div className="bg-[#3D3131] p-8 rounded-lg shadow-lg w-[800px] text-white relative">
-        <button className="absolute top-4 left-4 flex items-center text-white">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500">
+      <div className="p-12 rounded-2xl shadow-2xl w-[1000px] text-white backdrop-blur-md border border-white border-opacity-20 relative">
+        <button className="absolute top-4 left-2 flex items-center text-white hover:text-pink-300">
           <FaArrowLeft className="mr-2" /> Back
         </button>
-        <div className="flex justify-center items-center mb-4">
-          <div className="bg-purple-400 p-2 rounded-full mr-2"></div>
-          <h1 className="text-3xl font-bold">AesthetiQR</h1>
+        <div className="flex justify-center items-center mb-6">
+          <h1 className="text-4xl font-bagel text-white">AestheticQR</h1>
         </div>
-        <label className="block text-lg mb-2">What Can I Help With?</label>
-        <textarea
-          className="w-full p-2 rounded bg-white text-black"
-          placeholder="Ask anything"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-        ></textarea>
-        <div className="mt-4">
-          <label className="block mb-2">Upload Image</label>
-          <input type="file" accept="image/*" onChange={uploadImage} className="block w-full text-black" />
-        </div>
-        <div className="mt-4">
-          <label className="block mb-2">Save</label>
-          <button className="w-full flex items-center justify-center bg-white text-black py-2 rounded">
-            <FaSave className="mr-2" /> Save
-          </button>
-        </div>
-        <div className="mt-6 p-4 bg-white text-black rounded-lg border-4 border-pink-500 flex justify-center items-center">
-          <span className="text-2xl font-bold">QR CODE</span>
+        <div className="bg-black bg-opacity-50 p-10 rounded-lg w-full">
+          <label className="block text-lg mb-2 text-white">What Can I Help With?</label>
+          <textarea
+            className="w-full p-6 text-lg rounded-xl bg-transparent text-black placeholder-gray-500 focus:ring-2 focus:ring-pink-400 h-56 bg-white"
+            placeholder="Ask anything"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+          ></textarea>
+          <div className="mt-6">
+            <label className="block mb-2 text-white">Upload Image</label>
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={uploadImage} 
+              className="block w-full text-white bg-transparent p-3 rounded-xl cursor-pointer"
+            />
+          </div>
+          <div className="mt-6">
+            <button className="w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-xl shadow-md">
+              <FaSave className="mr-2" /> Save
+            </button>
+          </div>
+          <div className="mt-8 p-6 text-white rounded-xl flex justify-center items-center shadow-lg">
+            <span className="text-2xl font-bold">QR CODE</span>
+          </div>
         </div>
       </div>
     </div>
@@ -48,3 +53,4 @@ const AIPromptGenerator: React.FC = () => {
 };
 
 export default AIPromptGenerator;
+
