@@ -183,20 +183,10 @@ const Whiteboard: React.FC = () => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
 
-  // Back button click handler to navigate to Library page
-  const handleBackClick = () => {
-    navigate("/library"); // Navigate to the Library page
-  };
 
   return (
     <div className="flex flex-col items-center p-4 bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500 h-screen w-full">
       <div className="flex justify-between w-full px-4">
-        <button 
-          onClick={handleBackClick} // Handle Back button click
-          className="text-white bg-gray-700 px-4 py-2 rounded flex items-center"
-        >
-          <FaArrowLeft className="mr-2" /> Back
-        </button>
         <h2 className="text-3xl font-bagel text-white">AestheticQr</h2>
         <button className="text-white bg-blue-600 px-4 py-2 rounded flex items-center">
           Generate QR Code <FaQrcode className="ml-2" />
