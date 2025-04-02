@@ -1,19 +1,22 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { FaArrowLeft, FaQrcode, FaPencilAlt, FaPen, FaEraser, FaFont, FaUndo, FaShapes, FaSave } from "react-icons/fa";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const Whiteboard: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [drawing, setDrawing] = useState(false);
-  const [tool, setTool] = useState<"pencil" | "pen" | "eraser" | "text" | "shapes">("pencil");
+  const [tool, setTool] = useState("pencil");
   const [color, setColor] = useState("#000000");
   const [lineWidth, setLineWidth] = useState(4);
   const [text, setText] = useState("");
   const [history, setHistory] = useState<ImageData[]>([]);
-  const [shapeType, setShapeType] = useState<"rectangle" | "circle" | "triangle" | "star" | "heart">("rectangle");
-  const [showShapeOptions, setShowShapeOptions] = useState(false);  // Show or hide shape options
+  //for tracking the position of the start of the shape to end
+  const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
+  //for tracking the image data of the canvas
+  const [previewImage, setPreviewImage] = useState<ImageData | null>(null);
+  const [shapeType, setShapeType] = useState<"rectangle" | "circle" | "triangle" | "heart" | "star">("rectangle");
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -46,92 +49,171 @@ const Whiteboard: React.FC = () => {
     if (lastState) ctx.putImageData(lastState, 0, 0);
   };
 
-  const handleShapeSelection = (shape: "rectangle" | "circle" | "triangle" | "star" | "heart") => {
-    setShapeType(shape);
-    setShowShapeOptions(false); // Hide shape options after selecting a shape
-  };
-
-  const addShape = (e: React.MouseEvent) => {
+  const startDrawing = (e: React.MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const x = e.nativeEvent.offsetX;
-    const y = e.nativeEvent.offsetY;
-
-    ctx.strokeStyle = color;
-    ctx.lineWidth = lineWidth;
-    ctx.globalCompositeOperation = "source-over";
-
-    switch (shapeType) {
-      case "rectangle":
-        ctx.strokeRect(x - 50, y - 25, 100, 50); // Draw rectangle at clicked position
-        break;
-      case "circle":
-        ctx.beginPath();
-        ctx.arc(x, y, 50, 0, 2 * Math.PI); // Draw circle at clicked position
-        ctx.stroke();
-        break;
-      case "triangle":
-        const height = 50;
-        const width = 50;
-        ctx.beginPath();
-        ctx.moveTo(x, y - height / 2);
-        ctx.lineTo(x - width / 2, y + height / 2);
-        ctx.lineTo(x + width / 2, y + height / 2);
-        ctx.closePath();
-        ctx.stroke();
-        break;
-      case "star":
-        const spikes = 5;
-        const step = Math.PI / spikes;
-        const outerRadius = 50;
-        const innerRadius = outerRadius / 2;
-        ctx.beginPath();
-        ctx.moveTo(x + outerRadius * Math.cos(0), y - outerRadius * Math.sin(0));
-
-        for (let i = 1; i < 2 * spikes; i++) {
-          const radius = i % 2 === 0 ? outerRadius : innerRadius;
-          const angle = i * step;
-          ctx.lineTo(x + radius * Math.cos(angle), y - radius * Math.sin(angle));
-        }
-
-        ctx.closePath();
-        ctx.stroke();
-        break;
-
-      case "heart":
-
-      const widthHeart = 70; // Width of the heart
-      const heightHeart = 60; // Height of the heart
+    if (tool === "shapes") {
+      setStartPos({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
+      setPreviewImage(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    } else {
+      saveState();
+      setDrawing(true);
       ctx.beginPath();
-  
-      // Start point (bottom center of the heart)
-      ctx.moveTo(x, y + heightHeart / 4);
-  
-      // Left lobe (deeper and rounder)
-      ctx.bezierCurveTo(
-          x - widthHeart, y - heightHeart * 0.9,  // Control point 1 (wider and lower)
-          x - widthHeart * 0.6, y - heightHeart * 1.3, // Control point 2 (deeper top)
-          x, y - heightHeart / 2 // End at the top center
-      );
-  
-      // Right lobe (mirrored for symmetry)
-      ctx.bezierCurveTo(
-          x + widthHeart * 0.6, y - heightHeart * 1.3,  // Control point 2 (deeper top)
-          x + widthHeart, y - heightHeart * 0.9,  // Control point 1 (wider and lower)
-          x, y + heightHeart / 4 // End at the bottom center
-      );
-  
-
-      ctx.closePath();
-      ctx.stroke();
-      break;
-      default:
-        break;
+      ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
     }
   };
+
+  const draw = (e: React.MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    if (tool === "shapes") {
+      if (!startPos || !previewImage) return;
+
+      ctx.putImageData(previewImage, 0, 0);
+
+      const currentX = e.nativeEvent.offsetX;
+      const currentY = e.nativeEvent.offsetY;
+
+      const width = currentX - startPos.x;
+      const height = currentY - startPos.y;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.globalCompositeOperation = "source-over";
+
+      if (shapeType === "rectangle") {
+        ctx.strokeRect(startPos.x, startPos.y, width, height);
+      } else if (shapeType === "circle") {
+        const centerX = startPos.x + width / 2;
+        const centerY = startPos.y + height / 2;
+        const radiusX = Math.abs(width / 2);
+        const radiusY = Math.abs(height / 2);
+        ctx.beginPath();
+        ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+        ctx.stroke();
+      } else if (shapeType === "triangle") {
+        ctx.beginPath();
+        ctx.moveTo(startPos.x, startPos.y + height); // start at bottom-left
+        ctx.lineTo(startPos.x + width / 2, startPos.y); // draw line to top
+        ctx.lineTo(startPos.x + width, startPos.y + height); // then to bottom-right
+        ctx.closePath();
+        ctx.stroke();
+      } else if (shapeType === "heart") {
+        ctx.beginPath();
+        ctx.moveTo(startPos.x, startPos.y + height / 4);
+        
+        ctx.bezierCurveTo(startPos.x, startPos.y, startPos.x - width / 2, startPos.y, startPos.x - width / 2, startPos.y + height / 4);
+        ctx.bezierCurveTo(startPos.x - width / 2, startPos.y + height / 2, startPos.x, startPos.y + height, startPos.x, startPos.y + height * 1.2);
+        
+        ctx.bezierCurveTo(startPos.x, startPos.y + height, startPos.x + width / 2, startPos.y + height / 2, startPos.x + width / 2, startPos.y + height / 4);
+        ctx.bezierCurveTo(startPos.x + width / 2, startPos.y, startPos.x, startPos.y, startPos.x, startPos.y + height / 4);
+        
+        ctx.closePath();
+        ctx.stroke();
+      } else if (shapeType === "star") {
+        const points = 5; // number of points in the star
+        const centerX = startPos.x + width / 2;
+        const centerY = startPos.y + height / 2;
+        let outerRadius = Math.max(width, height) / 2; // star size scales with drag distance
+        let innerRadius = outerRadius / 2.5; // adjust for better proportions
+
+        ctx.beginPath();
+        const angle = Math.PI / points; 
+        for (let i = 0; i < 2 * points; i++) {
+            const radius = i % 2 === 0 ? outerRadius : innerRadius;
+            const x = centerX + radius * Math.cos(i * angle);
+            const y = centerY + radius * Math.sin(i * angle);
+            ctx.lineTo(x,y);
+        }
+        
+        ctx.closePath();
+        ctx.stroke();
+      }
+    } else if (drawing) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+
+      if (tool === "eraser") {
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.lineWidth = 10; // Optional: you can make eraser thicker
+      } else {
+        ctx.globalCompositeOperation = "source-over";
+      }
+
+      ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+      ctx.stroke();
+    }
+  };
+  const saveAsImage = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const image = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = "whiteboard.png"; // name of the downloaded file
+    link.click();
+  };
+
+  const stopDrawing = (e: React.MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    if (tool === "shapes" && startPos) {
+      saveState();
+
+      const endX = e.nativeEvent.offsetX;
+      const endY = e.nativeEvent.offsetY;
+      const width = endX - startPos.x;
+      const height = endY - startPos.y;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.globalCompositeOperation = "source-over";
+
+      setStartPos(null);
+      setPreviewImage(null);
+    }
+
+    // Stop freehand/eraser drawing too
+    setDrawing(false);
+  };
+
+  const addText = (e: React.MouseEvent) => {
+    if (tool !== "text") return;
+    saveState();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = color;
+    ctx.font = "20px Arial";
+    ctx.fillText(text, e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+  };
+
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setImage(file);
+  //     const canvas = canvasRef.current;
+  //     if (!canvas) return;
+  //     const ctx = canvas.getContext("2d");
+  //     if (!ctx) return;
+  //     const img = new Image();
+  //     img.src = URL.createObjectURL(file);
+  //     img.onload = () => {
+  //       ctx.drawImage(img, 50, 50, 200, 200);
+  //     };
+  //   }
+
+  // };
 
   const clearCanvas = () => {
     saveState();
@@ -144,24 +226,24 @@ const Whiteboard: React.FC = () => {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
 
-  const saveAsImage = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error("Canvas not found");
-      return;
-    }
-
-    const dataURL = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = dataURL;
-    link.download = "whiteboard-image.png";
-    link.click();
+  // Back button click handler to navigate to Library page
+  const handleBackClick = () => {
+    navigate("/library"); // Navigate to the Library page
   };
 
   return (
     <div className="flex flex-col items-center p-4 bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500 h-screen w-full">
       <div className="flex justify-between w-full px-4">
+        <button 
+            onClick={handleBackClick} // Handle Back button click
+            className="text-white bg-gray-700 px-4 py-2 rounded flex items-center"
+          >
+          <FaArrowLeft className="mr-2" /> Back
+        </button>
         <h2 className="text-3xl font-bagel text-white">AestheticQr</h2>
+        <button className="text-white bg-blue-600 px-4 py-2 rounded flex items-center">
+          Generate QR Code <FaQrcode className="ml-2" />
+        </button>
       </div>
       <div className="flex mt-4 w-full justify-center">
         <div className="flex flex-col bg-black bg-opacity-40 p-2 rounded-2xl shadow-2xl">
@@ -177,21 +259,9 @@ const Whiteboard: React.FC = () => {
           <button onClick={() => setTool("text")} className="p-2 hover:bg-gray-300 rounded-xl text-white">
             <FaFont />
           </button>
-          <button
-            onClick={() => setShowShapeOptions(!showShapeOptions)}
-            className="p-2 hover:bg-gray-300 rounded-xl text-white"
-          >
+          <button onClick={() => setTool("shapes")} className="p-2 hover:bg-gray-300 rounded-xl text-white">
             <FaShapes />
           </button>
-          {showShapeOptions && (
-            <div className="flex flex-col bg-gray-200 p-2 rounded-xl mt-2">
-              <button onClick={() => handleShapeSelection("rectangle")} className="p-2 hover:bg-gray-300 rounded-xl">Rectangle</button>
-              <button onClick={() => handleShapeSelection("circle")} className="p-2 hover:bg-gray-300 rounded-xl">Circle</button>
-              <button onClick={() => handleShapeSelection("triangle")} className="p-2 hover:bg-gray-300 rounded-xl">Triangle</button>
-              <button onClick={() => handleShapeSelection("star")} className="p-2 hover:bg-gray-300 rounded-xl">Star</button>
-              <button onClick={() => handleShapeSelection("heart")} className="p-2 hover:bg-gray-300 rounded-xl">Heart</button>
-            </div>
-          )}
           <button onClick={undo} className="p-2 hover:bg-gray-300 rounded-xl text-white">
             <FaUndo />
           </button>
@@ -201,26 +271,35 @@ const Whiteboard: React.FC = () => {
         </div>
         <canvas
           ref={canvasRef}
-          onClick={addShape}
+          onMouseDown={tool === "text" ? addText : startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
           className="bg-white rounded-2xl border border-gray-300 ml-4 shadow-xl"
         ></canvas>
       </div>
-      <div className="flex gap-2 mt-4">
+      {tool === "text" && <input type="text" value={text} onChange={(e) => setText(e.target.value)} placeholder="Enter text" className="mt-2 p-2 border rounded-xl bg-white text-black" />}
+      <div className="flex gap-2 mt-2">
         <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
-        <input
-          type="range"
-          min="1"
-          max="10"
-          value={lineWidth}
-          onChange={(e) => setLineWidth(Number(e.target.value))}
-        />
+        <input type="range" min="1" max="10" value={lineWidth} onChange={(e) => setLineWidth(Number(e.target.value))} />
         <button onClick={clearCanvas} className="bg-red-500 text-white px-4 py-1 rounded-xl">
           Clear
         </button>
+        {tool === "shapes" && (
+          <div className="ml-4 flex gap-2 items-center text-white">
+            <label className="text-sm">Shape:</label>
+            <select value={shapeType} onChange={(e) => setShapeType(e.target.value as "rectangle" | "circle" | "triangle" | "heart" | "star")} className="bg-black text-white p-1 rounded-xl">
+              <option value="rectangle">Rectangle</option>
+              <option value="circle">Circle</option>
+              <option value="triangle">Triangle</option>
+              <option value="heart">Heart</option>
+              <option value="star">Star</option>
+            </select>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default Whiteboard;
-
