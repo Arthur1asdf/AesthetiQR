@@ -240,7 +240,7 @@ const Whiteboard: React.FC = () => {
           >
           <FaArrowLeft className="mr-2" /> Back
         </button>
-        <h2 className="text-3xl font-bagel text-white">AestheticQr</h2>
+        <h2 className="text-3xl font-bagel text-white">Aestheti-Qr</h2>
         <button className="text-white bg-blue-600 px-4 py-2 rounded flex items-center">
           Generate QR Code <FaQrcode className="ml-2" />
         </button>

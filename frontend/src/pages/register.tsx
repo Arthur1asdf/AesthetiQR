@@ -37,7 +37,7 @@ const Register = () => {
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500">
-      <h1 className="text-5xl font-bagel text-white mb-8">AestheticQR</h1>
+      <h1 className="text-5xl font-bagel text-white mb-8">Aestheti-QR</h1>
 
       <div className="bg-black bg-opacity-10 p-8 rounded-2xl shadow-2xl w-full max-w-sm text-white backdrop-blur-md border border-white border-opacity-20">
         <h2 className="text-3xl font-bagel text-center mb-6">REGISTER</h2>

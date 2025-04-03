@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { FiSearch, FiUser, FiLogIn, FiPlus, FiArrowRight, FiBook } from 'react-icons/fi';
+import { useState, useEffect, useRef } from 'react';
+import { FiSearch, FiUser, FiPlus, FiArrowRight, FiBook, FiArrowDown } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
+import { useNavigate } from 'react-router-dom';
+import logoVideo from '../assets/logo.mp4'; // Make sure this path is correct
 
-// Define TypeScript interfaces
 interface Template {
   id: number;
   title: string;
@@ -59,8 +59,9 @@ const TemplateCard = ({
 const LoggedInHomePage = () => {
   const [selectedTemplates, setSelectedTemplates] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const navigate = useNavigate(); // Initialize navigate hook
+  const [showWelcome, setShowWelcome] = useState<boolean>(true);
+  const templatesRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1500);
@@ -71,6 +72,13 @@ const LoggedInHomePage = () => {
     setSelectedTemplates(prev =>
       prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
     );
+  };
+
+  const scrollToTemplates = () => {
+    setShowWelcome(false);
+    setTimeout(() => {
+      templatesRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 500);
   };
 
   const templates: Template[] = [
@@ -96,24 +104,34 @@ const LoggedInHomePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-800 to-pink-800 text-white">
-      {/* Noise texture overlay */}
       <div className="fixed inset-0 bg-noise opacity-10 pointer-events-none" />
       
-      {/* Main Content */}
       <main className="relative z-10 max-w-7xl mx-auto p-6">
-        {/* Header with Auth */}
+        {/* Header with Logo */}
         <motion.header 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4"
         >
-          <motion.h1 
-            className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300"
-            animate={{ backgroundPosition: ['0% 50%', '100% 50%'] }}
-            transition={{ duration: 5, repeat: Infinity, repeatType: "reverse" }}
-          >
-            AestheticQR
-          </motion.h1>
+          <div className="flex items-center gap-3">
+            <video 
+              className="w-16 h-16 rounded-full object-cover"
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+            >
+              <source src={logoVideo} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            <motion.h1 
+              className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300"
+              animate={{ backgroundPosition: ['0% 50%', '100% 50%'] }}
+              transition={{ duration: 5, repeat: Infinity, repeatType: "reverse" }}
+            >
+              Aestheti-QR
+            </motion.h1>
+          </div>
           
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <motion.div 
@@ -133,7 +151,7 @@ const LoggedInHomePage = () => {
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/profile")} // Navigate to Profile page
+              onClick={() => navigate("/profile")}
               className="flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full border border-white/20"
             >
               <FiUser />
@@ -142,34 +160,56 @@ const LoggedInHomePage = () => {
           </div>
         </motion.header>
 
-        {/* New Buttons for Library */}
-        <section className="mb-12">
-          <motion.h2 
-            className="text-2xl font-bold mb-4"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            Welcome Back! What would you like to do today?
-          </motion.h2>
-          
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/library")} // Navigate to Library page
-            className="flex items-center space-x-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full font-medium"
-          >
-            <FiBook />
-            <span>Go to Library</span>
-          </motion.button>
-        </section>
+        {/* Welcome Section */}
+        <AnimatePresence>
+          {showWelcome && (
+            <motion.section 
+              className="mb-12 min-h-[60vh] flex flex-col justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.h2 
+                className="text-7xl font-bold mb-6"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                Welcome Back!
+              </motion.h2>
+              
+              <div className="flex flex-wrap gap-4 mb-12">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => navigate("/library")}
+                  className="flex items-center space-x-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full font-medium"
+                >
+                  <FiBook />
+                  <span>Go to Library</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={scrollToTemplates}
+                  className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-6 py-3 rounded-full font-medium border border-white/20"
+                >
+                  <FiArrowDown />
+                  <span>Browse Templates</span>
+                </motion.button>
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
 
         {/* Template Section */}
-        <section className="mt-12">
+        <section className="py-12" ref={templatesRef}>
           <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
             <motion.h2 
               className="text-2xl font-bold"
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: showWelcome ? 0 : 1, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
@@ -179,7 +219,7 @@ const LoggedInHomePage = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/whiteboard")} // Navigate to Create page
+              onClick={() => navigate("/whiteboard")}
               className="flex items-center space-x-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full font-medium"
             >
               <FiPlus />

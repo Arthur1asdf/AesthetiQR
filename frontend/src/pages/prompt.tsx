@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaArrowLeft, FaDownload, FaSave } from "react-icons/fa";
 import QRCodeStyling from "qr-code-styling";
 import axios from "axios";
+import logoVideo from '../assets/logo.mp4';
 
 const AIPromptGenerator: React.FC = () => {
   // for image upload
@@ -96,8 +97,17 @@ const AIPromptGenerator: React.FC = () => {
 
         {/* logo */}
         <div id="logoContainer" className="flex items-center">
-          <div id="logoImg" className="bg-purple-400 p-8 rounded-full mr-4"></div>
-          <h1 id="logoText" className="text-5xl font-bold">AestheticQr</h1>
+          <video 
+            className="w-16 h-16 rounded-full object-cover mr-4"
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+          >
+            <source src={logoVideo} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <h1 id="logoText" className="text-5xl font-bold">Aestheti-Qr</h1>
         </div>
 
         {/* profile section (incoming drop-down menu) */}

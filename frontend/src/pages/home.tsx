@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FiSearch, FiUser, FiLogIn, FiPlus, FiArrowRight } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
+import logoVideo from '../assets/logo.mp4'; // Adjust the path based on your file structure
 
 // Define TypeScript interfaces
 interface Template {
@@ -108,13 +109,26 @@ const HomePage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4"
         >
+          <div className="flex items-center gap-3">
+          <video 
+          className="w-16 h-16 rounded-full object-cover"
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          >
+            <source src={logoVideo} type="video/mp4" />
+            Your browser does not support the video tag.
+            </video>
+
           <motion.h1 
             className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300"
             animate={{ backgroundPosition: ['0% 50%', '100% 50%'] }}
             transition={{ duration: 5, repeat: Infinity, repeatType: "reverse" }}
           >
-            AestheticQR
+            Aestheti-QR
           </motion.h1>
+          </div>
           
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             <motion.div 
