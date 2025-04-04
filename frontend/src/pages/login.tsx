@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -27,9 +28,10 @@ const Login = () => {
       const data = await response.json();
       console.log("Login Successful:", data);
       alert("Login Successful!");
+      navigate("/dashboard");
     } catch (err: any) {
       console.error("Login Failed:", err);
-      setError(err.message || "Login failed. Please check your credentials.");
+      setError(err.message || "Login failed. Please check your email and password.");
     }
   };
 
@@ -41,15 +43,15 @@ const Login = () => {
         {error && <p className="text-red-400 text-sm text-center">{error}</p>}
         <form onSubmit={handleLogin}>
           <div className="mb-4">
-            <label className="block text-sm">USERNAME:</label>
-            <div className="flex items-center bg-black bg-opacity-20 text-white p-2 rounded-xl">
+            <label className="block text-sm">USERNAME/EMAIL:</label>
+            <div className="flex items-center bg-gray-800 bg-opacity-20 text-white p-2 mt-2 rounded-xl">
               <FaUser className="mr-2" />
               <input type="text" placeholder="Enter your username" className="bg-transparent w-full outline-none text-white placeholder-gray-300" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
           </div>
           <div className="mb-4">
             <label className="block text-sm">PASSWORD:</label>
-            <div className="flex items-center bg-black bg-opacity-20 text-white p-2 rounded-xl">
+            <div className="flex items-center bg-gray-800 bg-opacity-20 text-white p-2 mt-2 rounded-xl">
               <FaLock className="mr-2" />
               <input type="password" placeholder="Enter your password" className="bg-transparent w-full outline-none text-white placeholder-gray-300" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>

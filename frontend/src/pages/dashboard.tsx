@@ -56,7 +56,7 @@ const TemplateCard = ({
   </motion.div>
 );
 
-const LoggedInHomePage = () => {
+const Dashboard = () => {
   const [selectedTemplates, setSelectedTemplates] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showWelcome, setShowWelcome] = useState<boolean>(true);
@@ -247,4 +247,4 @@ const LoggedInHomePage = () => {
   );
 };
 
-export default LoggedInHomePage;
+export default Dashboard;

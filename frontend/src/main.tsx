@@ -8,7 +8,7 @@ import Whiteboard from "./pages/whiteboard";
 import AIPromptGenerator from "./pages/prompt";
 import QRCodeGenerator from "./pages/qrCodeGenerator";
 import LibraryPage from "./pages/library";
-import LoggedInHomePage from "./pages/loggedinhomepage";
+import Dashboard from "./pages/dashboard";
 import Profile from "./pages/profile";
 
 import "./index.css";
@@ -33,9 +33,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         {/* ai prompt and qr code is going to be merged into one ANNA working on it */}
         <Route path="/profile" element={<Profile />} />
         <Route path="/prompt" element={<AIPromptGenerator />} />
-        <Route path="/qrcode" element={<QRCodeGenerator />} />
-        <Route path="/loggedinhomepage" element={<LoggedInHomePage />} />
-       
+        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* just a template page (not going to use in the final product) */}
+        <Route path="/qrcode" element={<QRCodeGenerator />} />      
       </Routes>
     </Router>
   </React.StrictMode>

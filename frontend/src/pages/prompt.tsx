@@ -44,12 +44,17 @@ const AIPromptGenerator: React.FC = () => {
   };
 
   const generateQRCode = () => {
+    if (!url.trim()) {
+      alert("Please enter a valid URL for the QR Code.");
+      return;
+    }
+
     if (!qrCodeRef.current) {
       qrCodeRef.current = new QRCodeStyling({
         width: 200,
         height: 200,
         type: "svg",
-        data: url || "https://your-default-url.com", // uses user input url or default
+        data: url, // uses user input url
         image: image ? image : undefined, // uses uploaded image if available
         dotsOptions: { color: "#000", type: "rounded" },
         backgroundOptions: { color: "#fff" },
@@ -57,7 +62,7 @@ const AIPromptGenerator: React.FC = () => {
       });
     } else {
       qrCodeRef.current.update({
-        data: url || "https://your-default-url.com",
+        data: url,
         image: image ? image : undefined,
       });
     }
@@ -65,6 +70,8 @@ const AIPromptGenerator: React.FC = () => {
     if (canvasRef.current) {
       canvasRef.current.innerHTML = ""; // Clear previous QR code
       qrCodeRef.current.append(canvasRef.current);
+    } else {
+      console.error("Canvas ref is null. Make sure it's properly assigned in the JSX.");
     }
   };
 
@@ -118,7 +125,7 @@ const AIPromptGenerator: React.FC = () => {
       </div>
 
       {/* main container filling the remaining space */}
-      <div id="mainContainer" className="flex w-full h-full space-x-1 p-1 opacity-70">
+      <div id="mainContainer" className="flex w-full h-full space-x-1 p-1 opacity-100">
 
         {/* left container */}
         <div id="leftContainer" className="flex-col rounded-2xl shadow-lg w-full max-w-3xl items-center justify-center">

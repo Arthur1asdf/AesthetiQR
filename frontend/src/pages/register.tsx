@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [name, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +30,7 @@ const Register = () => {
       const data = await response.json();
       console.log("Registration Successful:", data);
       alert("Registration Successful! You can now log in.");
+      navigate("/");
     } catch (err: any) {
       console.error("Registration Failed:", err);
       setError(err.message || "Registration failed. Try a different username or email.");
@@ -49,7 +51,7 @@ const Register = () => {
         <form onSubmit={handleRegister}>
           <div className="mb-4">
             <label className="block text-sm">EMAIL:</label>
-            <div className="flex items-center bg-black bg-opacity-20 text-white p-2 rounded-xl">
+            <div className="flex items-center bg-gray-800 bg-opacity-20 text-white p-2 mt-2 rounded-xl">
               <FaEnvelope className="mr-2" />
               <input
                 type="email"
@@ -63,7 +65,7 @@ const Register = () => {
 
           <div className="mb-4">
             <label className="block text-sm">USERNAME:</label>
-            <div className="flex items-center bg-black bg-opacity-20 text-white p-2 rounded-xl">
+            <div className="flex items-center bg-gray-800 bg-opacity-20 text-white p-2 mt-2 rounded-xl">
               <FaUser className="mr-2" />
               <input
                 type="text"
@@ -77,7 +79,7 @@ const Register = () => {
 
           <div className="mb-4">
             <label className="block text-sm">PASSWORD:</label>
-            <div className="flex items-center bg-black bg-opacity-20 text-white p-2 rounded-xl">
+            <div className="flex items-center bg-gray-800 bg-opacity-20 text-white p-2 mt-2 rounded-xl">
               <FaLock className="mr-2" />
               <input
                 type="password"
