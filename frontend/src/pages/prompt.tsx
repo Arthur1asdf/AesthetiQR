@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaArrowLeft, FaDownload, FaSave } from "react-icons/fa";
-import QRCodeStyling from "qr-code-styling";
+import QRCodeStyling, { CornerSquareType, DotType } from "qr-code-styling";
 import axios from "axios";
 import logoVideo from '../assets/logo.mp4';
 
@@ -11,7 +11,6 @@ const AIPromptGenerator: React.FC = () => {
 
   // for open ai
   const [prompt, setPrompt] = useState("");
-  const [imageAI, setImageAI] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -20,6 +19,13 @@ const AIPromptGenerator: React.FC = () => {
   const [url, setUrl] = useState("");
   const qrCodeRef = useRef<QRCodeStyling | null>(null);
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const [dotsShape, setDotsShape] = useState("dots");
+  const [dotsColor, setDotsColor] = useState("#000000");
+  const [cornerStyle, setCornerStyle] = useState("square");
+  const [cornerColor, setCornerColor] = useState("#000000");
+  const [bgColor, setBgColor] = useState("#ffffff");
+  const [hideBackgroundDots, setHideBackgroundDots] = useState(false);
+  const [imageSize, setImageSize] = useState(1.0);
 
   const generateImage = async () => {
     if (!prompt.trim()) return;
@@ -51,14 +57,28 @@ const AIPromptGenerator: React.FC = () => {
 
     if (!qrCodeRef.current) {
       qrCodeRef.current = new QRCodeStyling({
-        width: 200,
-        height: 200,
+        width: 300,
+        height: 300,
         type: "svg",
         data: url, // uses user input url
         image: image ? image : undefined, // uses uploaded image if available
-        dotsOptions: { color: "#000", type: "rounded" },
-        backgroundOptions: { color: "#fff" },
-        imageOptions: { crossOrigin: "anonymous", margin: 5, imageSize: 1 },
+        dotsOptions: { 
+          color: cornerColor, 
+          type: dotsShape as DotType, 
+        },
+        cornersSquareOptions: {
+          color:cornerColor,
+          type: cornerStyle as CornerSquareType,
+        },
+        backgroundOptions: { 
+          color: bgColor,
+        },
+        imageOptions: { 
+          crossOrigin: "anonymous", 
+          margin: 5,
+          hideBackgroundDots, 
+          imageSize, 
+        },
       });
     } else {
       qrCodeRef.current.update({
@@ -125,7 +145,7 @@ const AIPromptGenerator: React.FC = () => {
       </div>
 
       {/* main container filling the remaining space */}
-      <div id="mainContainer" className="flex w-full h-full space-x-1 p-1 opacity-100">
+      <div id="mainContainer" className="flex w-full h-full space-x-1 p-1 opacity-80">
 
         {/* left container */}
         <div id="leftContainer" className="flex-col rounded-2xl shadow-lg w-full max-w-3xl items-center justify-center">
@@ -144,11 +164,13 @@ const AIPromptGenerator: React.FC = () => {
                 ></textarea>
 
                 {/* generate image button */}
-                <button
-                  onClick={generateImage}
-                  className="cursor-pointer mt-2 w-full flex items-center justify-center bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-                  disabled={loading}
-                >{loading ? "Generating..." : "Generate Image"}</button>
+                <div className="mt-2 bg-gray-900 p-1 rounded-lg  shadow-md">
+                  <button
+                    onClick={generateImage}
+                    className="cursor-pointer w-full flex items-center justify-center bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                    disabled={loading}
+                  >{loading ? "Generating..." : "Generate Image"}</button>
+                </div>
 
                 {/* display error */}
                 {error && <p className="text-red-500 mt-2">{error}</p>}
@@ -165,8 +187,8 @@ const AIPromptGenerator: React.FC = () => {
                 </div>
 
                 {/* save button for generated image */}
-                <div className="mt-3">
-                  <button id="saveGenImgBtn" className="cursor-pointer w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-xl shadow-md">
+                <div className="mt-3 bg-gray-900 p-1 rounded-lg shadow-md">
+                  <button id="saveGenImgBtn" className="cursor-pointer w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg">
                     <FaSave className="mr-2" /> Save
                   </button>
                 </div>
@@ -175,22 +197,24 @@ const AIPromptGenerator: React.FC = () => {
 
             <div id="imgUploadContainer" className="flex mt-3 p-5 space-x-3 items-start rounded-2xl bg-[#B3B3B3]">
               <div>
-                <label id="uploadLabel" className="block text-lg mb-5 text-black">Upload An Image:</label>
+                <label id="uploadLabel" className="block text-lg mb-3 text-black">Upload An Image:</label>
                 {/* Image Upload Button */}
-                <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Upload Image
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={uploadImage} 
-                    className="hidden"
-                  />
-                </label>
+                <div className="flex-1 bg-gray-900 p-1 rounded-lg shadow-lg flex items-center justify-center">
+                  <label className="cursor-pointer bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 w-full text-center">Upload Image
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={uploadImage} 
+                      className="hidden"
+                    />
+                  </label>
+                </div>
 
                 {/* Show uploaded file name */}
                 {uploadedFileName && <p className="mt-2 text-sm text-gray-800">{uploadedFileName}</p>}
               
                 {/* Placeholder for uploaded image */}
-                <div className="w-64 h-64 mt-5 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-white">
+                <div className="w-96 h-96 mt-5 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-white">
                   {image ? (
                     <img src={image} alt="Uploaded" className="w-full h-full object-cover rounded-lg" />
                   ) : (
@@ -201,7 +225,7 @@ const AIPromptGenerator: React.FC = () => {
                 {/* Generate QR Code from upload image */}
                 <div className="flex-1 bg-gray-900 p-1 mt-5 rounded-lg shadow-lg flex items-center justify-center">
                   <button 
-                    className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 w-full"
+                    className="cursor-pointer bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 w-full"
                     onClick={generateQRCode}
                   >
                     Generate QR Code
@@ -221,10 +245,17 @@ const AIPromptGenerator: React.FC = () => {
                   className="w-full p-2 border-3 border-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                 />
                 
-                <label id="qrLabel" className="block text-lg mt-5 text-black">Your Generated QR:</label>
+                <label id="qrLabel" className="block text-2xl mt-5 text-black">Your Generated QR:</label>
                 {/* display qr code */}
-                <div ref={canvasRef} className="w-64 h-64 mt-2 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-white">
+                <div ref={canvasRef} className="w-64 h-64 mt-5 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-white">
                   {/* QR Code will be rendered here */}
+                </div>
+
+                {/* save qr code */}
+                <div className="w-64 bg-gray-900 mt-4 p-1 rounded-lg shadow-lg">
+                  <button id="saveQrBtn" className="cursor-pointer w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg shadow-md">
+                    <FaSave className="mr-2" /> Save
+                  </button>
                 </div>
               </div>
 
@@ -233,8 +264,136 @@ const AIPromptGenerator: React.FC = () => {
         </div> {/* end of main left container */}
 
         {/* right container */}
-        <div id="rightSubcontainer" className="rounded-2xl p-4 shadow-lg w-full bg-[#1A1B1E]">
-          {}
+        <div id="rightSubcontainer" className="rounded-2xl p-3 shadow-lg w-full bg-[#1A1B1E]">
+          <div id="rightSubcontainer" className="flex p-5 space-x-3 justify-center items-start rounded-2xl bg-[#B3B3B3]">
+            <div id="customizeContainer" className="flex-1 space-y-5 text-black">
+
+              {/* section title */}
+              <h2 className="text-3xl font-bold text-center mb-4">Customize Your QR Code</h2>
+
+              {/* dots shape + corner squares options */} 
+              <div className="flex space-x-4">
+                {/* dots shape options */}
+                <div id="dotsShape" className="flex-1">
+                  <label className="block text-lg mb-2">Dot Shape:</label>
+                  <select
+                    className="w-full p-2 border-3 bg-pink-500 rounded-lg text-white"
+                    value={dotsShape}
+                    onChange={(e) => setDotsShape(e.target.value)}
+                  >
+                    <option value="square">Square</option>
+                    <option value="dots">Dots</option>
+                    <option value="rounded">Rounded</option>
+                    <option value="extra-rounded">Extra Rounded</option>
+                    <option value="classy">Classy</option>
+                  </select>
+                </div>
+
+                {/* corners square options */}
+                <div id="cornerSquare" className="flex-1">
+                  <label className="block text-lg mb-2">Corner Style:</label>
+                  <select
+                    className="w-full p-2 border-3 bg-pink-500 rounded-lg text-white"
+                    value={cornerStyle}
+                    onChange={(e) => setCornerStyle(e.target.value)}
+                  >
+                    <option value="square">Square</option>
+                    <option value="dot">Dot</option>
+                    <option value="rounded">Rounded</option>
+                    <option value="extra-rounded">Extra Rounded</option>
+                  </select>
+                </div>
+              </div>  
+              
+              {/* dot color + corner color */}
+              <div className="flex space-x-4">
+                {/* dot color */}
+                <div id="dotColor" className="flex-1">
+                  <label className="block text-lg mb-2">Dot Color:</label>
+                  <input
+                    type="color"
+                    className="h-12 w-full rounded bg-white"
+                    value={dotsColor}
+                    onChange={(e) => setDotsColor(e.target.value)}
+                  />
+                </div>
+
+                {/* corner color */}
+                <div id="cornerColor" className="flex-1">
+                  <label className="block text-lg mb-2">Corner Color:</label>
+                  <input
+                    type="color"
+                    className="h-12 w-full rounded bg-white"
+                    value={cornerColor}
+                    onChange={(e) => setCornerColor(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* background color */}
+              <div id="bgColor" className="flex flex-col">
+                <label className="text-lg mb-1">Background Color:</label>
+                <input
+                  type="color"
+                  className="h-10 w-full p-1 rounded-lg"
+                  value={bgColor}
+                  onChange={(e) => setBgColor(e.target.value)}
+                />
+              </div>
+
+              {/* show/hide dots behind image */}
+              <div id="dotsVisibility" className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="hideDots"
+                  checked={hideBackgroundDots}
+                  onChange={(e) => setHideBackgroundDots(e.target.checked)}
+                />
+                <label htmlFor="hideDots" className="text-lg">Hide Dots Behind Image</label>
+              </div>
+
+              {/* image size slider */}
+              <div id="imageSize" className="flex flex-col">
+                <label className="text-lg mb-1">Image Size (% of QR):</label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1"
+                  step="0.1"
+                  value={imageSize}
+                  onChange={(e) => setImageSize(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+                <span>{Math.round(imageSize * 100)}%</span>
+                
+                {/* Generate QR Code from upload image */}
+                <div className="flex-1 bg-black p-1 mt-5 rounded-lg shadow-lg flex items-center justify-center">
+                  <button 
+                    className="cursor-pointer bg-green-500 text-white text-2xl px-6 py-2 rounded-lg hover:bg-green-600 w-full"
+                    onClick={generateQRCode}
+                  >
+                    Generate QR Code
+                  </button>
+                </div>
+                
+                {/* qr preview */}
+                <label id="qrLabel" className="block text-2xl mt-5 text-black text-center">Your Generated QR:</label>
+                <div className="flex justify-center items-center mt-5">
+                  <div id="qrPreview" className="w-128 aspect-square mt-5 border-10 border-pink-500 rounded-lg shadow-lg flex items-center justify-center">
+                    <div ref={canvasRef} className="w-full h-full bg-white border-2 items-center"></div>
+                  </div>
+                </div>
+
+                {/* save qr code */}
+                <div className="w-full bg-gray-900 mt-4 p-1 rounded-lg shadow-lg">
+                  <button id="saveQrBtn" className="cursor-pointer w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white text-2xl py-3 rounded-lg shadow-md">
+                    <FaSave className="mr-2" /> SAVE
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
         </div>
       </div> 
 
