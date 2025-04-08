@@ -1,15 +1,50 @@
-import React, { useState } from "react";
-import { FaUser, FaLock, FaBirthdayCake, FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
+import { useReverification, useUser } from "@clerk/clerk-react";
+import React, { useEffect, useState } from "react";
+import {
+  FaUser,
+  FaLock,
+  FaBirthdayCake,
+  FaEye,
+  FaEyeSlash,
+  FaArrowLeft,
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; // Import useNavigate hook for routing
 
 const Profile: React.FC = () => {
-  const [username, setUsername] = useState<string>("");
+  const { user, isLoaded, isSignedIn } = useUser();
+  const [username, setUsername] = useState<string>(user?.username ?? "");
   const [password, setPassword] = useState<string>("");
-  const [birthdate, setBirthdate] = useState<string>("");
+  const [birthdate, setBirthdate] = useState<string>(
+    (user?.unsafeMetadata?.birthdate as string) ?? "",
+  );
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
 
   const navigate = useNavigate(); // Initialize navigate function for routing
+  const updateUser = useReverification(async () => {
+    await user?.setProfileImage({ file: profilePic });
+    await user?.update({ username, unsafeMetadata: { birthdate } });
+    if (password) {
+      user?.updatePassword({
+        newPassword: password,
+      });
+    }
+  });
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !user?.imageUrl) return;
+    const fetchProfilePic = async () => {
+      const response = await fetch(user.imageUrl);
+      const buffer = await response.arrayBuffer();
+      setProfilePic(new File([buffer], "profile.jpg", { type: "image/jpeg" }));
+    };
+    fetchProfilePic();
+  }, []);
+
+  if (!isSignedIn || !user) {
+    navigate("/login");
+    return null;
+  }
 
   // Handle profile picture change
   const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +60,7 @@ const Profile: React.FC = () => {
 
   // Handle back button click
   const handleBackClick = () => {
-    navigate("/loggedinhomepage"); // Change this to your logged-in home page route
+    navigate("/"); // Change this to your logged-in home page route
   };
 
   return (
@@ -65,7 +100,9 @@ const Profile: React.FC = () => {
               )}
             </div>
           </label>
-          <p className="text-sm text-pink-400">Click to choose a profile picture</p>
+          <p className="text-sm text-pink-400">
+            Click to choose a profile picture
+          </p>
         </div>
 
         {/* Username Section */}
@@ -86,7 +123,7 @@ const Profile: React.FC = () => {
         {/* Password Section */}
         <div className="mb-4">
           <label className="block text-pink-400 mb-2" htmlFor="password">
-            Password
+            New Password
           </label>
           <div className="relative">
             <input
@@ -95,7 +132,7 @@ const Profile: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 border rounded bg-gray-800 text-pink-500"
-              placeholder="Enter your password"
+              placeholder="Enter your new password"
             />
             <button
               type="button"
@@ -125,10 +162,7 @@ const Profile: React.FC = () => {
         <div className="flex justify-center">
           <button
             className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded w-full max-w-sm"
-            onClick={() => {
-              // Handle save logic here, e.g., make API call to save the profile info
-              alert("Profile saved!");
-            }}
+            onClick={updateUser}
           >
             Save Changes
           </button>
@@ -139,6 +173,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-
-
-
