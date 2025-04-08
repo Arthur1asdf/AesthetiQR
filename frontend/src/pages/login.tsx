@@ -1,3 +1,4 @@
+import { useSignIn } from "@clerk/clerk-react";
 import React, { useState } from "react";
 import { FaUser, FaLock } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
@@ -7,31 +8,35 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const { signIn, isLoaded, setActive } = useSignIn();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); // Clear errors
+    if (!isLoaded) return;
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
+      const signInAttempt = await signIn.create({
+        identifier: email,
+        password,
       });
 
-      if (!response.ok) {
-        throw new Error("Invalid credentials, please try again.");
+      if (signInAttempt.status === "complete") {
+        await setActive({ session: signInAttempt.createdSessionId });
+        navigate("/dashboard");
+      } else {
+        console.error(JSON.stringify(signInAttempt, null, 2));
       }
-
-      const data = await response.json();
-      console.log("Login Successful:", data);
-      alert("Login Successful!");
       navigate("/dashboard");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      console.error("Login Failed:", err);
-      setError(err.message || "Login failed. Please check your email and password.");
+      console.error(
+        "Login Failed:",
+        console.error(JSON.stringify(err, null, 2)),
+      );
+      setError(
+        err.message || "Login failed. Please check your email and password.",
+      );
     }
   };
 
@@ -46,17 +51,32 @@ const Login = () => {
             <label className="block text-sm">USERNAME/EMAIL:</label>
             <div className="flex items-center bg-gray-800 bg-opacity-20 text-white p-2 mt-2 rounded-xl">
               <FaUser className="mr-2" />
-              <input type="text" placeholder="Enter your username" className="bg-transparent w-full outline-none text-white placeholder-gray-300" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input
+                type="text"
+                placeholder="Enter your username"
+                className="bg-transparent w-full outline-none text-white placeholder-gray-300"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
           </div>
           <div className="mb-4">
             <label className="block text-sm">PASSWORD:</label>
             <div className="flex items-center bg-gray-800 bg-opacity-20 text-white p-2 mt-2 rounded-xl">
               <FaLock className="mr-2" />
-              <input type="password" placeholder="Enter your password" className="bg-transparent w-full outline-none text-white placeholder-gray-300" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <input
+                type="password"
+                placeholder="Enter your password"
+                className="bg-transparent w-full outline-none text-white placeholder-gray-300"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
           </div>
-          <button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 rounded-xl shadow-md">
+          <button
+            type="submit"
+            className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 rounded-xl shadow-md"
+          >
             LOGIN
           </button>
         </form>

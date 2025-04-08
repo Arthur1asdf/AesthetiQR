@@ -2,7 +2,6 @@ import express from "express";
 import * as dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
-import authRoutes from "./routes/auth.js";
 import openaiRoutes from "./routes/openai.js";
 import profilepic from "./routes/profilepicRoute.js";
 import qrcodeRoute from "./routes/qrcodeRoute.js";
@@ -19,7 +18,6 @@ app.get("/", (req, res) => {
 });
 
 // Mount the auth routes on the /api/auth path
-app.use("/api/auth", authRoutes);
 app.use("/api/openai", openaiRoutes); // Mount the OpenAI routes on the /api/openai path
 app.use("/api/profilepic", profilepic); // Mount the profile picture routes on the /api/profilepic path
 app.use("/api/qrcode", qrcodeRoute); // Mount the QR code routes on the /api/qrcode path
@@ -35,7 +33,7 @@ const startServer = async () => {
       DB /*{
       useNewUrlParser: true,
       useUnifiedTopology: true,
-    }*/
+    }*/,
     );
     console.log("Connected to MongoDB");
 

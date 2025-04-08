@@ -1,3 +1,4 @@
+import { useSignUp } from "@clerk/clerk-react";
 import { useState } from "react";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,32 +9,31 @@ const Register = () => {
   const [name, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { isLoaded, signUp, setActive } = useSignUp();
 
   // Handle Registration
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); // Clear errors before making a request
+    if (!isLoaded) return;
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/register", { // Ensure this URL is correct
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
+      const signUpAttempt = await signUp.create({
+        emailAddress: email,
+        username: name,
+        password,
       });
 
-      if (!response.ok) {
-        throw new Error("Registration failed. Try a different username or email.");
+      if (signUpAttempt.status === "complete") {
+        await setActive({ session: signUpAttempt.createdSessionId });
+        navigate("/dashboard");
       }
-
-      const data = await response.json();
-      console.log("Registration Successful:", data);
-      alert("Registration Successful! You can now log in.");
-      navigate("/");
     } catch (err: any) {
       console.error("Registration Failed:", err);
-      setError(err.message || "Registration failed. Try a different username or email.");
+      setError(
+        err.message ||
+          "Registration failed. Try a different username or email.",
+      );
     }
   };
 
