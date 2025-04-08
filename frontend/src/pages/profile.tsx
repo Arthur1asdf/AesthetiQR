@@ -1,4 +1,4 @@
-import { useReverification, useUser } from "@clerk/clerk-react";
+import { useClerk, useReverification, useUser } from "@clerk/clerk-react";
 import React, { useEffect, useState } from "react";
 import {
   FaUser,
@@ -19,6 +19,7 @@ const Profile: React.FC = () => {
   );
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+  const { signOut } = useClerk();
 
   const navigate = useNavigate(); // Initialize navigate function for routing
   const updateUser = useReverification(async () => {
@@ -159,12 +160,18 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-center">
+        <div className="flex gap-2">
           <button
-            className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded w-full max-w-sm"
+            className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded w-full flex-1"
             onClick={updateUser}
           >
             Save Changes
+          </button>
+          <button
+            className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded w-full flex-1"
+            onClick={async () => await signOut({ redirectUrl: "/" })}
+          >
+            Sign Out
           </button>
         </div>
       </div>
