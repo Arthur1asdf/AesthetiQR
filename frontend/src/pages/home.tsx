@@ -154,6 +154,7 @@ const HomePage = () => {
             </motion.div>
             <SignedIn>
               <motion.button
+                onClick={() => navigate("/profile")}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex items-center justify-center space-x-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full border border-white/20"
