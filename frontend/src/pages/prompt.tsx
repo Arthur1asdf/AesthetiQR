@@ -155,7 +155,7 @@ const AIPromptGenerator: React.FC = () => {
             <source src={logoVideo} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <h1 id="logoText" className="text-5xl font-bold">Aestheti-Qr</h1>
+          <h1 id="logoText" className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300">Aestheti-Qr</h1>
         </div>
 
         {/* profile section (incoming drop-down menu) */}
@@ -166,14 +166,15 @@ const AIPromptGenerator: React.FC = () => {
       </div>
 
       {/* main container filling the remaining space */}
-      <div id="mainContainer" className="flex w-full h-full space-x-1 p-1 opacity-80">
+      <div id="mainContainer" className="flex w-full h-full space-x-1 p-3">
 
         {/* left container */}
         <div id="leftContainer" className="flex-col rounded-2xl shadow-lg w-full max-w-3xl items-center justify-center">
-          <div id="leftSubcontainer" className="rounded-2xl p-3 shadow-lg w-full max-w-3xl bg-[#1A1B1E]">
 
+          {/* left top container */}
+          <div id="leftSubcontainerTop" className="rounded-2xl p-2 shadow-lg w-full max-w-3xl bg-[#fccee8]">
             {/* prompt with the image side by side container */}
-            <div id="promptwimageContainer" className="flex p-5 space-x-3 items-start rounded-2xl bg-[#B3B3B3]">
+            <div id="promptwimageContainer" className="flex p-5 space-x-3 items-start rounded-2xl bg-[#fda5d5]">
               <div id="promptContainer" className="flex-1">
                 {/* prompt input */}
                 <label id="promptLabel" className="block text-lg mb-2 text-black">What can I help you with?</label>
@@ -220,8 +221,11 @@ const AIPromptGenerator: React.FC = () => {
                 </div>
               </div>   
             </div>
+          </div>
 
-            <div id="imgUploadContainer" className="flex mt-3 p-5 space-x-3 items-start rounded-2xl bg-[#B3B3B3]">
+          {/* left bottom container */}
+          <div id="leftSubcontainerBottom" className="rounded-2xl mt-1 p-2 shadow-lg w-full max-w-3xl bg-[#fccee8]">
+            <div id="imgUploadContainer" className="flex p-5 space-x-3 items-start rounded-2xl bg-[#fda5d5]">
               <div>
                 <label id="uploadLabel" className="block text-lg mb-3 text-black">Upload An Image:</label>
                 {/* Image Upload Button */}
@@ -290,8 +294,8 @@ const AIPromptGenerator: React.FC = () => {
         </div> {/* end of main left container */}
 
         {/* right container */}
-        <div id="rightSubcontainer" className="rounded-2xl p-3 shadow-lg w-full bg-[#1A1B1E]">
-          <div id="rightSubcontainer" className="flex p-5 space-x-3 justify-center items-start rounded-2xl bg-[#B3B3B3]">
+        <div id="rightSubcontainer" className="rounded-2xl p-3 shadow-lg w-full bg-[#fccee8]">
+          <div id="rightSubcontainer" className="flex p-5 space-x-3 justify-center items-start rounded-2xl bg-[#fda5d5]">
             <div id="customizeContainer" className="flex-1 space-y-5 text-black">
 
               {/* section title */}

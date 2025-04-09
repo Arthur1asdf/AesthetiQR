@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { FaArrowLeft, FaQrcode, FaPencilAlt, FaPen, FaEraser, FaFont, FaUndo, FaShapes, FaSave } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import logoVideo from '../assets/logo.mp4';
 
 const Whiteboard: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -25,7 +26,7 @@ const Whiteboard: React.FC = () => {
     if (!ctx) return;
 
     canvas.width = 800;
-    canvas.height = 400;
+    canvas.height = 500;
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }, []);
@@ -231,21 +232,44 @@ const Whiteboard: React.FC = () => {
     navigate("/library"); // Navigate to the Library page
   };
 
+  const handleGenerateQRCodeClick = () => {
+    navigate('/prompt'); // navigate to /prompt page
+  };
+
   return (
-    <div className="flex flex-col items-center p-4 bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500 h-screen w-full">
-      <div className="flex justify-between w-full px-4">
-        <button 
-            onClick={handleBackClick} // Handle Back button click
-            className="text-white bg-gray-700 px-4 py-2 rounded flex items-center"
-          >
+    <div className="flex flex-col items-center bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500 h-screen w-full relative">
+      {/* title bar: fixed logo at top of screen with the back button*/}
+      <div id="topHeader" className="w-full flex items-center justify-between p-4 shadow-lg">
+
+        {/* back button*/}
+        <button id="backButton" onClick={handleBackClick} className="flex items-center text-white text-lg hover:text-gray-300 bg-gray-700 px-4 py-2 rounded">
           <FaArrowLeft className="mr-2" /> Back
         </button>
-        <h2 className="text-3xl font-bagel text-white">Aestheti-Qr</h2>
-        <button className="text-white bg-blue-600 px-4 py-2 rounded flex items-center">
-          Generate QR Code <FaQrcode className="ml-2" />
-        </button>
+
+        {/* logo */}
+        <div id="logoContainer" className="flex items-center">
+          <video 
+            className="w-16 h-16 rounded-full object-cover mr-4"
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+          >
+            <source src={logoVideo} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <h1 id="logoText" className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300">Aestheti-Qr</h1>
+        </div>
+
+        {/* profile section (incoming drop-down menu) */}
+        <div id="profileContainer" className="flex items-center">
+          <span id="username" className="mr-3 text-xl font-semibold">Name</span>
+          <div id="pfp" className="w-15 h-15 bg-gray-500 rounded-full"></div>
+        </div>
       </div>
-      <div className="flex mt-4 w-full justify-center">
+
+      {/* whiteboard container */}
+      <div id="whiteboardContainer" className="flex mt-4 p-5 w-full justify-center">
         <div className="flex flex-col bg-black bg-opacity-40 p-2 rounded-2xl shadow-2xl">
           <button onClick={() => setTool("pencil")} className="p-2 hover:bg-gray-300 rounded-xl text-white">
             <FaPencilAlt />
@@ -279,6 +303,8 @@ const Whiteboard: React.FC = () => {
         ></canvas>
       </div>
       {tool === "text" && <input type="text" value={text} onChange={(e) => setText(e.target.value)} placeholder="Enter text" className="mt-2 p-2 border rounded-xl bg-white text-black" />}
+
+      {/* color pallete, pen size, clear button and shape choices */}
       <div className="flex gap-2 mt-2">
         <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
         <input type="range" min="1" max="10" value={lineWidth} onChange={(e) => setLineWidth(Number(e.target.value))} />
@@ -298,6 +324,15 @@ const Whiteboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* generate qr code button */}
+      <button id="genQRbutton" 
+        onClick={handleGenerateQRCodeClick} 
+        className="absolute bottom-5 right-5 text-white text-xl bg-pink-500 hover:bg-pink-600 border-5 px-6 py-2 rounded-lg shadow-xl flex items-center"
+      >
+        Generate QR Code <FaQrcode className="ml-2" />
+      </button>
+
     </div>
   );
 };
