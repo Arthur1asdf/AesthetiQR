@@ -1,4 +1,5 @@
 // routes/openai.js
+import axios from "axios";
 import express from "express";
 import OpenAI from "openai";
 import GeneratedImage from "../models/GeneratedImage.js";
@@ -35,10 +36,36 @@ router.post("/generate-image", async (req, res) => {
     // Optionally, save the generated image info to the database
     const generatedImage = await GeneratedImage.create({ prompt, imageUrl });
 
-    res.status(200).json({ success: true, data: generatedImage.data });
+    res.status(200).json({ success: true, data: { imageUrl: generatedImage.imageUrl } });
   } catch (error) {
     console.error("Error generating image:", error);
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get("/download-image", async (req, res) => {
+  const { imageUrl, prompt } = req.query;
+
+  if (!imageUrl || !prompt) {
+    return res.status(400).send("Missing imageUrl or prompt.");
+  }
+
+  try {
+    const response = await axios.get(imageUrl, {
+      responseType: "arraybuffer", // important to preserve binary data
+    });
+
+    const filename = `${prompt.replace(/\s+/g, "_").toLowerCase()}.png`;
+
+    res.set({
+      "Content-Type": "image/png",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+    });
+
+    res.send(response.data);
+  } catch (error) {
+    console.error("Download error:", error.message);
+    res.status(500).send("Failed to download image.");
   }
 });
 

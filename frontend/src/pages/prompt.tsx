@@ -49,6 +49,27 @@ const AIPromptGenerator: React.FC = () => {
     }
   };
 
+  // fetch the image as a blob and trigger the download manually
+  const downloadImage = async () => {
+    if (!imageUrl || loading) return;
+  
+    try {
+      const encodedUrl = encodeURIComponent(imageUrl);
+      const encodedPrompt = encodeURIComponent(prompt);
+  
+      const downloadLink = document.createElement("a");
+      downloadLink.href = `http://localhost:3000/api/openai/download-image?imageUrl=${encodedUrl}&prompt=${encodedPrompt}`;
+      downloadLink.setAttribute("download", `${prompt.replace(/\s+/g, "_").toLowerCase()}.png`);
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    } catch (err) {
+      console.error("Download failed:", err);
+      alert("Error downloading image. Try again.");
+    }
+  };
+  
+
   const generateQRCode = () => {
     if (!url.trim()) {
       alert("Please enter a valid URL for the QR Code.");
@@ -178,9 +199,9 @@ const AIPromptGenerator: React.FC = () => {
 
               <div id="uploadImgPlaceholderContainer">
                 {/* display generated image */}
-                <div id="uploadImagePlaceholder" className="w-64 aspect-square border-10 border-gray-600 flex items-center justify-center rounded-lg bg-white p-10">
+                <div id="uploadImagePlaceholder" className="w-64 aspect-square border-10 border-gray-600 flex items-center justify-center rounded-lg bg-white p-1">
                   {imageUrl ? (
-                      <img src={imageUrl} alt="Generated" className="w-full h-full object-cover rounded-lg" />
+                      <img src={imageUrl} alt="Generated" className="w-full h-full object-cover" />
                   ) : (
                       <span className="text-gray-400">No image yet</span>
                   )}
@@ -188,7 +209,12 @@ const AIPromptGenerator: React.FC = () => {
 
                 {/* save button for generated image */}
                 <div className="mt-3 bg-gray-900 p-1 rounded-lg shadow-md">
-                  <button id="saveGenImgBtn" className="cursor-pointer w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg">
+                  <button 
+                    id="saveGenImgBtn"
+                    onClick={downloadImage}
+                    disabled={!imageUrl}
+                    className="cursor-pointer w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg transition"
+                  >
                     <FaSave className="mr-2" /> Save
                   </button>
                 </div>

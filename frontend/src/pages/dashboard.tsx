@@ -235,7 +235,7 @@ const Dashboard = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/whiteboard")}
+              onClick={() => navigate("/prompt")}
               className="flex items-center space-x-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-full font-medium"
             >
               <FiPlus />
