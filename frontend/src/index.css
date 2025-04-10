@@ -1,5 +1,9 @@
 @import "tailwindcss";
 body {
-    font-family: "Bagel Fat One", cursive;
-  }
-  
+  font-family: "Bagel Fat One", cursive;
+}
+
+.text-outline {
+  -webkit-text-stroke: 0.5px rgb(250, 243, 246);
+  text-stroke: 0.5px white; /* fallback */
+}

@@ -104,7 +104,7 @@ const HomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-800 to-pink-800 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-800 to-pink-700 text-white">
       {/* Noise texture overlay */}
       <div className="fixed inset-0 bg-noise opacity-10 pointer-events-none" />
 
@@ -129,7 +129,7 @@ const HomePage = () => {
             </video>
 
             <motion.h1
-              className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300"
+              className="text-6xl py-3 font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300"
               animate={{ backgroundPosition: ["0% 50%", "100% 50%"] }}
               transition={{
                 duration: 5,
