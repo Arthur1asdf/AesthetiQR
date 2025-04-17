@@ -1,6 +1,7 @@
 import React from "react";
-import { FaUserCog, FaPlus, FaThLarge, FaClipboard } from "react-icons/fa";
+import { FaUserCog, FaPlus, FaThLarge, FaClipboard, FaArrowCircleLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import logoVideo from '../assets/logo.mp4';
 
 const LibraryPage: React.FC = () => {
   const navigate = useNavigate(); // Initialize useNavigate
@@ -12,7 +13,37 @@ const LibraryPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500 flex justify-center items-start px-6 py-10">
-      <div className="flex w-full max-w-6xl gap-12">
+      {/* title bar: fixed logo at top of screen with the back button*/}
+      <div id="topHeader" className="w-full flex items-center justify-between p-4 shadow-lg">
+
+        {/* back button*/}
+        <button id="backButton" className="flex items-center text-white text-lg hover:text-gray-300 bg-gray-700 px-4 py-2 rounded">
+          <FaArrowCircleLeft className="mr-2" /> Back
+        </button>
+
+        {/* logo */}
+        <div id="logoContainer" className="flex items-center">
+          <video 
+            className="w-16 h-16 rounded-full object-cover mr-4"
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+          >
+            <source src={logoVideo} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <h1 id="logoText" className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300">Aestheti-Qr</h1>
+        </div>
+
+        {/* profile section (incoming drop-down menu) */}
+        <div id="profileContainer" className="flex items-center">
+          <span id="username" className="mr-3 text-xl font-semibold">Name</span>
+          <div id="pfp" className="w-15 h-15 bg-gray-500 rounded-full"></div>
+        </div>
+      </div>
+
+      {/* <div className="flex w-full max-w-6xl gap-12"> */}
         {/* Sidebar */}
         <div className="w-64 bg-black bg-opacity-10 p-6 rounded-2xl shadow-lg">
           <h2 className="text-xl text-white mb-6">Navigation</h2>
@@ -50,7 +81,7 @@ const LibraryPage: React.FC = () => {
             {/* More templates would be dynamically loaded here */}
           </div>
         </div>
-      </div>
+      {/* </div> */}
     </div>
   );
 };

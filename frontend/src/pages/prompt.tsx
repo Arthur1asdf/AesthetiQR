@@ -1,10 +1,13 @@
+import { useUser } from "@clerk/clerk-react";
 import React, { useState, useRef, useEffect } from "react";
-import { FaArrowLeft, FaDownload, FaSave } from "react-icons/fa";
-import QRCodeStyling, { CornerSquareType, DotType } from "qr-code-styling";
+import { FaArrowCircleLeft, FaDownload, FaSave } from "react-icons/fa";
+import QRCodeStyling, { CornerSquareType, DotType, DrawType } from "qr-code-styling";
 import axios from "axios";
 import logoVideo from '../assets/logo.mp4';
 
 const AIPromptGenerator: React.FC = () => {
+  const { user } = useUser();
+
   // for image upload
   const [image, setImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState("");
@@ -17,9 +20,19 @@ const AIPromptGenerator: React.FC = () => {
 
   // for qr generation
   const [url, setUrl] = useState("");
-  const qrCodeRef = useRef<QRCodeStyling | null>(null);
-  const canvasRef = useRef<HTMLDivElement | null>(null);
-  const [dotsShape, setDotsShape] = useState("dots");
+  // default QR code refs (always uses simple styling)
+  const defaultCanvasRef = useRef<HTMLDivElement | null>(null);
+  const defaultQRCodeRef = useRef<QRCodeStyling | null>(null);
+  // customized QR code refs (will update based on the customize controls)
+  const customCanvasRef = useRef<HTMLDivElement | null>(null);
+  const customQRCodeRef = useRef<QRCodeStyling | null>(null);
+
+  // for qr backend save
+  const [qrName, setQrName] = useState("");
+  const [showNameInput, setShowNameInput] = useState(false);
+
+  // some set initial customizations for qr
+  const [dotsShape, setDotsShape] = useState("square");
   const [dotsColor, setDotsColor] = useState("#000000");
   const [cornerStyle, setCornerStyle] = useState("square");
   const [cornerColor, setCornerColor] = useState("#000000");
@@ -27,6 +40,7 @@ const AIPromptGenerator: React.FC = () => {
   const [hideBackgroundDots, setHideBackgroundDots] = useState(false);
   const [imageSize, setImageSize] = useState(1.0);
 
+  // ----------------- Image Generation Functions -----------------
   const generateImage = async () => {
     if (!prompt.trim()) return;
     
@@ -69,53 +83,162 @@ const AIPromptGenerator: React.FC = () => {
     }
   };
   
+  // ----------------- QR Code Generation Functions -----------------
 
-  const generateQRCode = () => {
+  // generates the default QR code with a simple design and renders it into BOTH canvases.
+  // the customization canvas will then serve as the starting point for further updates.
+  const generateDefaultQRCode = () => {
     if (!url.trim()) {
       alert("Please enter a valid URL for the QR Code.");
       return;
     }
 
-    if (!qrCodeRef.current) {
-      qrCodeRef.current = new QRCodeStyling({
-        width: 300,
-        height: 300,
-        type: "svg",
-        data: url, // uses user input url
-        image: image ? image : undefined, // uses uploaded image if available
-        dotsOptions: { 
-          color: cornerColor, 
-          type: dotsShape as DotType, 
-        },
-        cornersSquareOptions: {
-          color:cornerColor,
-          type: cornerStyle as CornerSquareType,
-        },
-        backgroundOptions: { 
-          color: bgColor,
-        },
-        imageOptions: { 
-          crossOrigin: "anonymous", 
-          margin: 5,
-          hideBackgroundDots, 
-          imageSize, 
-        },
-      });
+    // define simple default options
+    const defaultOptions = {
+      width: 300,
+      height: 300,
+      type: "svg" as DrawType, // cast to DrawType so TS knows it’s not just any string, but a valid DrawType
+      data: url, // uses user input url
+      image: image ? image : undefined, // uses uploaded image if available
+      dotsOptions: { 
+        color: dotsColor, 
+        type: dotsShape as DotType, 
+      },
+      cornersSquareOptions: {
+        color: cornerColor,
+        type: cornerStyle as CornerSquareType,
+      },
+      backgroundOptions: { 
+        color: bgColor,
+      },
+      imageOptions: { 
+        crossOrigin: "anonymous", 
+        margin: 5,
+        hideBackgroundDots, 
+        imageSize, 
+      },
+    }
+
+    const customOptions = {
+      ...defaultOptions,
+      width: 400,
+      height: 400,
+    }
+
+    // create or update the defualt qr code instance
+    if (!defaultQRCodeRef.current) {
+      defaultQRCodeRef.current = new QRCodeStyling(defaultOptions);
     } else {
-      qrCodeRef.current.update({
+      defaultQRCodeRef.current.update({
         data: url,
         image: image ? image : undefined,
       });
     }
-    // Ensure QR code renders inside the container
-    if (canvasRef.current) {
-      canvasRef.current.innerHTML = ""; // Clear previous QR code
-      qrCodeRef.current.append(canvasRef.current);
+    // ensure QR code renders inside the container
+    if (defaultCanvasRef.current) {
+      defaultCanvasRef.current.innerHTML = ""; // clear previous QR code
+      defaultQRCodeRef.current.append(defaultCanvasRef.current);
     } else {
-      console.error("Canvas ref is null. Make sure it's properly assigned in the JSX.");
+      console.error("Default canvas ref is null. Make sure it's properly assigned in the JSX.");
+    }
+
+    // also initialize/update the custom QR code instance with the same default options
+    if (!customQRCodeRef.current) {
+      customQRCodeRef.current = new QRCodeStyling(customOptions);
+    } else {
+      customQRCodeRef.current.update({ data: url, image: image ? image : undefined });
+    }
+    // ensure QR code renders inside the container
+    if (customCanvasRef.current) {
+      customCanvasRef.current.innerHTML = "";
+      customQRCodeRef.current.append(customCanvasRef.current);
+    } else {
+      console.error("Custom canvas ref is null. Make sure it's properly assigned in the JSX.");
     }
   };
 
+  // update the customized QR code on the second canvas only
+  const updateCustomizedQRCode = () => {
+    if (!customQRCodeRef.current) {
+      alert("Please generate the default QR Code first.");
+      return;
+    }
+    customQRCodeRef.current.update({
+      data: url,
+      image: image ? image : undefined,
+      dotsOptions: { 
+        color: dotsColor, 
+        type: dotsShape as DotType, 
+      },
+      cornersSquareOptions: {
+        color: cornerColor,
+        type: cornerStyle as CornerSquareType,
+      },
+      backgroundOptions: { 
+        color: bgColor,
+      },
+      imageOptions: { 
+        crossOrigin: "anonymous", 
+        margin: 5,
+        hideBackgroundDots, 
+        imageSize, 
+      },
+    });
+  };
+
+  // download functions for QR codes
+  const downloadDefaultQRCode = () => {
+    defaultQRCodeRef.current?.download({ name: "qrcode", extension: "png" });
+  };
+
+  const downloadCustomQRCode = () => {
+    customQRCodeRef.current?.download({ name: "custom_qrcode", extension: "png" });
+  };
+
+  const saveCustomQRCode = async () => {
+    if (!user) return alert("Not signed in");
+
+    if (!customQRCodeRef.current) {
+      return alert("Generate the custom QR first!");
+    }
+
+    if (!qrName.trim()) return alert("Name your QR code! C:");
+
+    try {
+      // grab the png blob from the QRCodeStyling instance
+      const blob: Blob = await customQRCodeRef.current.getRawData("png");
+
+      // convert to base64
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === "string") {
+            resolve(reader.result);
+          } else {
+            reject(new Error("Failed to read blob as DataURL"));
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      // post to backend
+      await axios.post("http://localhost:3000/api/qrcode/addQrcode", {
+        userId: user.id,
+        qrcodeUrl: dataUrl,
+        qrcodeName: qrName.trim() || "Untitled QR",
+      });
+
+      alert("Saved!");
+      setShowNameInput(false);
+      setQrName("");
+    } catch (err) {
+      console.error(err);
+      alert("Save failed. Please try again.");
+    }
+  }
+
+  // ----------------- Image Upload Function -----------------
   const uploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -128,10 +251,7 @@ const AIPromptGenerator: React.FC = () => {
     }
   };
 
-  const downloadQRCode = () => {
-    qrCodeRef.current?.download({ name: "qrcode", extension: "png" });
-  };
-
+  // ----------------- JSX -----------------
   return (
     <div id="mainBackground" className="w-full min-h-screen flex flex-col justify-center items-center text-white bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500">
 
@@ -140,7 +260,7 @@ const AIPromptGenerator: React.FC = () => {
 
         {/* back button*/}
         <button id="backButton" className="flex items-center text-white text-lg hover:text-gray-300 bg-gray-700 px-4 py-2 rounded">
-          <FaArrowLeft className="mr-2" /> Back
+          <FaArrowCircleLeft className="mr-2" /> Back
         </button>
 
         {/* logo */}
@@ -166,18 +286,18 @@ const AIPromptGenerator: React.FC = () => {
       </div>
 
       {/* main container filling the remaining space */}
-      <div id="mainContainer" className="flex w-full h-full space-x-1 p-3">
+      <div id="mainContainer" className="flex w-full h-full space-x-1 p-2">
 
         {/* left container */}
         <div id="leftContainer" className="flex-col rounded-2xl shadow-lg w-full max-w-3xl items-center justify-center">
 
-          {/* left top container */}
-          <div id="leftSubcontainerTop" className="rounded-2xl p-2 shadow-lg w-full max-w-3xl bg-[#fccee8]">
+          {/* left top container: open ai image generation */}
+          <div id="leftSubcontainerTop" className="rounded-2xl p-3 shadow-lg w-full max-w-3xl bg-[#fccee8]">
             {/* prompt with the image side by side container */}
             <div id="promptwimageContainer" className="flex p-5 space-x-3 items-start rounded-2xl bg-[#fda5d5]">
               <div id="promptContainer" className="flex-1">
                 {/* prompt input */}
-                <label id="promptLabel" className="block text-lg mb-2 text-black">What can I help you with?</label>
+                <label id="promptLabel" className="block text-xl mb-2 text-black">What can I help you with?</label>
                 <textarea id="promptextArea"
                   className="w-full p-6 text-lg rounded-xl text-black placeholder-gray-500 focus:ring-pink-400 h-56 bg-white"
                   placeholder="Enter a description for the image..."
@@ -186,12 +306,14 @@ const AIPromptGenerator: React.FC = () => {
                 ></textarea>
 
                 {/* generate image button */}
-                <div className="mt-2 bg-gray-900 p-1 rounded-lg  shadow-md">
+                <div className="mt-2 bg-gray-900 p-1 rounded-lg shadow-md">
                   <button
                     onClick={generateImage}
-                    className="cursor-pointer w-full flex items-center justify-center bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                    className="cursor-pointer w-full flex py-2 rounded items-center justify-center text-lg bg-blue-500 hover:bg-blue-600"
                     disabled={loading}
-                  >{loading ? "Generating..." : "Generate Image"}</button>
+                  >
+                    {loading ? "Generating..." : "Generate Image"}
+                  </button>
                 </div>
 
                 {/* display error */}
@@ -200,7 +322,7 @@ const AIPromptGenerator: React.FC = () => {
 
               <div id="uploadImgPlaceholderContainer">
                 {/* display generated image */}
-                <div id="uploadImagePlaceholder" className="w-64 aspect-square border-10 border-gray-600 flex items-center justify-center rounded-lg bg-white p-1">
+                <div id="uploadImagePlaceholder" className="w-64 aspect-square border-2 border-gray-600 flex items-center justify-center rounded-lg bg-white p-1">
                   {imageUrl ? (
                       <img src={imageUrl} alt="Generated" className="w-full h-full object-cover" />
                   ) : (
@@ -214,23 +336,24 @@ const AIPromptGenerator: React.FC = () => {
                     id="saveGenImgBtn"
                     onClick={downloadImage}
                     disabled={!imageUrl}
-                    className="cursor-pointer w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg transition"
+                    className="cursor-pointer w-full flex py-3 items-center justify-center bg-pink-500 hover:bg-pink-600 text-lg tracking-widest rounded-lg transition"
                   >
-                    <FaSave className="mr-2" /> Save
+                    <FaSave className="mr-2" /> SAVE
                   </button>
                 </div>
               </div>   
             </div>
           </div>
 
-          {/* left bottom container */}
-          <div id="leftSubcontainerBottom" className="rounded-2xl mt-1 p-2 shadow-lg w-full max-w-3xl bg-[#fccee8]">
+          {/* left bottom container: upload image & default qr code generation */}
+          <div id="leftSubcontainerBottom" className="rounded-2xl mt-1 p-3 shadow-lg w-full max-w-3xl bg-[#fccee8]">
             <div id="imgUploadContainer" className="flex p-5 space-x-3 items-start rounded-2xl bg-[#fda5d5]">
-              <div>
-                <label id="uploadLabel" className="block text-lg mb-3 text-black">Upload An Image:</label>
-                {/* Image Upload Button */}
+
+              <div id="imgUploadContainerLeft">
+                <label id="uploadLabel" className="block text-xl mb-3 text-black">UPLOAD AN IMAGE:</label>
+                {/* image upload button */}
                 <div className="flex-1 bg-gray-900 p-1 rounded-lg shadow-lg flex items-center justify-center">
-                  <label className="cursor-pointer bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 w-full text-center">Upload Image
+                  <label className="cursor-pointer px-6 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 w-full text-lg text-center">Upload Image
                     <input 
                       type="file" 
                       accept="image/*" 
@@ -240,11 +363,11 @@ const AIPromptGenerator: React.FC = () => {
                   </label>
                 </div>
 
-                {/* Show uploaded file name */}
-                {uploadedFileName && <p className="mt-2 text-sm text-gray-800">{uploadedFileName}</p>}
+                {/* show uploaded file name */}
+                {uploadedFileName && <p className="mt-2 text-md text-gray-800">{"FILENAME: " + uploadedFileName}</p>}
               
-                {/* Placeholder for uploaded image */}
-                <div className="w-96 h-96 mt-5 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-white">
+                {/* placeholder for uploaded image */}
+                <div className="w-80 h-80 mt-5 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-white">
                   {image ? (
                     <img src={image} alt="Uploaded" className="w-full h-full object-cover rounded-lg" />
                   ) : (
@@ -252,20 +375,7 @@ const AIPromptGenerator: React.FC = () => {
                   )}
                 </div>
 
-                {/* Generate QR Code from upload image */}
-                <div className="flex-1 bg-gray-900 p-1 mt-5 rounded-lg shadow-lg flex items-center justify-center">
-                  <button 
-                    className="cursor-pointer bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 w-full"
-                    onClick={generateQRCode}
-                  >
-                    Generate QR Code
-                  </button>
-                </div>
-              </div>
-
-              {/* Right side: URL input and display QR code */}
-              <div className="flex-1 flex flex-col items-center">
-                <label id="urlLabel" className="block text-lg mb-3 text-black">Input an URL:</label>
+                <label id="urlLabel" className="block text-xl mt-5 mb-2 text-black">INPUT AN URL:</label>
                 {/* input for url */}
                 <input 
                   type="text" 
@@ -274,32 +384,49 @@ const AIPromptGenerator: React.FC = () => {
                   onChange={(e) => setUrl(e.target.value)}
                   className="w-full p-2 border-3 border-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                 />
+
+                {/* generate QR Code from upload image */}
+                <div className="flex-1 bg-gray-900 p-1 mt-5 rounded-lg shadow-lg flex items-center justify-center">
+                  <button 
+                    className="cursor-pointer px-6 py-3 rounded-lg bg-green-500 hover:bg-green-600 w-full text-lg"
+                    onClick={generateDefaultQRCode}
+                  >
+                    Generate QR Code
+                  </button>
+                </div>
+              </div>
+
+              {/* right side: display QR code */}
+              <div id="imgUploadContainerRight" className="flex-1 flex flex-col items-center">
                 
-                <label id="qrLabel" className="block text-2xl mt-5 text-black">Your Generated QR:</label>
+                <label id="qrLabel" className="block text-2xl text-pink-500 mt-23">👾YOUR GENERATED QR👾</label>
                 {/* display qr code */}
-                <div ref={canvasRef} className="w-64 h-64 mt-5 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-white">
+                <div ref={defaultCanvasRef} className="w-80 h-80 mt-5 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-white">
                   {/* QR Code will be rendered here */}
                 </div>
 
                 {/* save qr code */}
                 <div className="w-64 bg-gray-900 mt-4 p-1 rounded-lg shadow-lg">
-                  <button id="saveQrBtn" className="cursor-pointer w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg shadow-md">
-                    <FaSave className="mr-2" /> Save
+                  <button 
+                    id="saveQrBtn" 
+                    onClick={downloadDefaultQRCode}
+                    className="cursor-pointer w-full flex py-3 items-center justify-center bg-pink-500 hover:bg-pink-600 text-lg tracking-widest rounded-lg shadow-md"
+                  >
+                    <FaSave className="mr-2" /> SAVE
                   </button>
                 </div>
               </div>
-
             </div> {/* end of image upload container */}  
           </div> {/* end of left subcontainer */}
         </div> {/* end of main left container */}
 
-        {/* right container */}
-        <div id="rightSubcontainer" className="rounded-2xl p-3 shadow-lg w-full bg-[#fccee8]">
+        {/* right container: customize qr code */}
+        <div id="rightContainer" className="rounded-2xl p-3 shadow-lg w-full bg-[#fccee8]">
           <div id="rightSubcontainer" className="flex p-5 space-x-3 justify-center items-start rounded-2xl bg-[#fda5d5]">
             <div id="customizeContainer" className="flex-1 space-y-5 text-black">
 
               {/* section title */}
-              <h2 className="text-3xl font-bold text-center mb-4">Customize Your QR Code</h2>
+              <h2 className="text-3xl text-pink-500 font-bold text-center mb-4">🍃CUSTOMIZE YOUR QR CODE🍃</h2>
 
               {/* dots shape + corner squares options */} 
               <div className="flex space-x-4">
@@ -321,7 +448,7 @@ const AIPromptGenerator: React.FC = () => {
 
                 {/* corners square options */}
                 <div id="cornerSquare" className="flex-1">
-                  <label className="block text-lg mb-2">Corner Style:</label>
+                  <label className="block text-lg mb-2">Corner Shape:</label>
                   <select
                     className="w-full p-2 border-3 bg-pink-500 rounded-lg text-white"
                     value={cornerStyle}
@@ -388,7 +515,7 @@ const AIPromptGenerator: React.FC = () => {
                 <input
                   type="range"
                   min="0.1"
-                  max="1"
+                  max="2"
                   step="0.1"
                   value={imageSize}
                   onChange={(e) => setImageSize(parseFloat(e.target.value))}
@@ -397,36 +524,66 @@ const AIPromptGenerator: React.FC = () => {
                 <span>{Math.round(imageSize * 100)}%</span>
                 
                 {/* Generate QR Code from upload image */}
-                <div className="flex-1 bg-black p-1 mt-5 rounded-lg shadow-lg flex items-center justify-center">
+                <div className="flex-1 bg-black p-1 mt-5 rounded-lg shadow-lg items-center">
                   <button 
                     className="cursor-pointer bg-green-500 text-white text-2xl px-6 py-2 rounded-lg hover:bg-green-600 w-full"
-                    onClick={generateQRCode}
+                    onClick={updateCustomizedQRCode}
                   >
                     Generate QR Code
                   </button>
                 </div>
                 
                 {/* qr preview */}
-                <label id="qrLabel" className="block text-2xl mt-5 text-black text-center">Your Generated QR:</label>
-                <div className="flex justify-center items-center mt-5">
-                  <div id="qrPreview" className="w-128 aspect-square mt-5 border-10 border-pink-500 rounded-lg shadow-lg flex items-center justify-center">
-                    <div ref={canvasRef} className="w-full h-full bg-white border-2 items-center"></div>
+                <label id="qrLabel" className="block text-3xl mt-10 text-pink-500 text-center">🍃YOUR CUSTOMIZED QR CODE🍃</label>
+                <div className="flex justify-center items-center p-5">
+                  <div id="qrPreview" className="w-96 aspect-square border-10 border-pink-500 rounded-lg shadow-lg">
+                    <div ref={customCanvasRef} className="w-full h-full flex items-center justify-center bg-white border-2 items-center"></div>
                   </div>
                 </div>
 
-                {/* save qr code */}
-                <div className="w-full bg-gray-900 mt-4 p-1 rounded-lg shadow-lg">
-                  <button id="saveQrBtn" className="cursor-pointer w-full flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white text-2xl py-3 rounded-lg shadow-md">
-                    <FaSave className="mr-2" /> SAVE
+                {/* save and download qr code buttons */}
+                <div className="flex space-x-4 w-full mt-4">
+                  {/* download only */}
+                  <button 
+                    id="saveQrBtn" 
+                    onClick={downloadCustomQRCode}
+                    className="cursor-pointer flex-1 flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white text-2xl py-3 rounded-lg shadow-md"
+                  >
+                    <FaDownload className="mr-2" /> DOWNLOAD
                   </button>
-                </div>
 
+                  {/* save to backend */}
+                  {!showNameInput ? (
+                    <button
+                      onClick={() => setShowNameInput(true)}
+                      className="cursor-pointer flex-1 flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white text-2xl py-3 rounded-lg shadow-md"
+                    >
+                      <FaSave className="mr-2" /> SAVE
+                    </button>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Enter QR name"
+                        value={qrName}
+                        onChange={e => setQrName(e.target.value)}
+                        className="p-2 border rounded-lg"
+                      />
+                      <button 
+                        id="saveQrBtn" 
+                        onClick={saveCustomQRCode}
+                        className="cursor-pointer flex-1 flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white text-2xl py-3 rounded-lg shadow-md"
+                      >
+                        <FaSave className="mr-2" /> Confirm SAVE
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </div> {/* end of right container */}
       </div> 
-
     </div>
   );
 };

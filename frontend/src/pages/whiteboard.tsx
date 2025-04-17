@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { FaArrowLeft, FaQrcode, FaPencilAlt, FaPen, FaEraser, FaFont, FaUndo, FaShapes, FaSave } from "react-icons/fa";
+import { FaArrowCircleLeft, FaQrcode, FaPencilAlt, FaPen, FaEraser, FaFont, FaUndo, FaShapes, FaSave } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import logoVideo from '../assets/logo.mp4';
 
@@ -243,7 +243,7 @@ const Whiteboard: React.FC = () => {
 
         {/* back button*/}
         <button id="backButton" onClick={handleBackClick} className="flex items-center text-white text-lg hover:text-gray-300 bg-gray-700 px-4 py-2 rounded">
-          <FaArrowLeft className="mr-2" /> Back
+          <FaArrowCircleLeft className="mr-2" /> Back
         </button>
 
         {/* logo */}

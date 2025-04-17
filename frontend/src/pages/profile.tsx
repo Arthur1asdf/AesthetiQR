@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import {
   FaEye,
   FaEyeSlash,
-  FaArrowLeft,
+  FaArrowCircleLeft,
   FaCalendarAlt,
 } from "react-icons/fa";
 import DatePicker from 'react-datepicker';
@@ -64,7 +64,7 @@ const Profile: React.FC = () => {
 
   // Handle back button click
   const handleBackClick = () => {
-    navigate("/"); // Change this to your logged-in home page route
+    navigate("/dashboard"); // Change this to your logged-in home page route
   };
 
   // handle date change
@@ -87,7 +87,7 @@ const Profile: React.FC = () => {
           onClick={handleBackClick}
           className="absolute top-4 left-4 text-pink-100 hover:text-pink-300 flex items-center"
         >
-          <FaArrowLeft className="mr-2" />
+          <FaArrowCircleLeft className="mr-2" />
           Back to Home
         </button>
 

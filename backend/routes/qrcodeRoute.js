@@ -4,15 +4,17 @@ import QRCode from "../models/QRCode.js";
 const router = express.Router();
 
 router.post("/addQrcode", async (req, res) => {
-  const { userId, qrcodeUrl, qrcodeName } = req.body;
+  // clerk has already verified this route; userId is guaranteed
+  const userId = req.auth?.userId || req.body.userId;
+  const { qrcodeUrl, qrcodeName } = req.body;
   if (!userId || !qrcodeUrl) {
-    return res.status(400).json({ error: "User ID and QR code are required" });
+    return res.status(400).json({ error: "userId and QR code URL is required" });
   }
   try {
     const newQRCode = await QRCode.create({
       user: userId, // map userId from frontend to user field in model
       imageUrl: qrcodeUrl, // map qrcodeurl to imageUrl
-      qrcodeName: qrcodeName, // add qrcodeName if provided
+      qrcodeName, // add qrcodeName if provided
     });
     res.status(201).json({ success: true, data: newQRCode });
   } catch (error) {

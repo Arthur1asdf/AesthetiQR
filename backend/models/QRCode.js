@@ -2,8 +2,7 @@ import mongoose from "mongoose";
 
 const QRcodeSchema = new mongoose.Schema({
   user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    type: String,
     required: true,
   },
   imageUrl: {
@@ -14,7 +13,7 @@ const QRcodeSchema = new mongoose.Schema({
   qrcodeName: {
     // New field for the name
     type: String,
-    required: false, // or true if you want it to be required
+    required: true, // or true if you want it to be required
   },
   uploadedAt: {
     type: Date,
