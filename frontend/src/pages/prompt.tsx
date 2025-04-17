@@ -1,12 +1,20 @@
-import { useUser } from "@clerk/clerk-react";
+import { useClerk, useUser } from "@clerk/clerk-react";
 import React, { useState, useRef, useEffect } from "react";
 import { FaArrowCircleLeft, FaDownload, FaSave } from "react-icons/fa";
 import QRCodeStyling, { CornerSquareType, DotType, DrawType } from "qr-code-styling";
 import axios from "axios";
 import logoVideo from '../assets/logo.mp4';
+import { useNavigate, Link } from "react-router-dom";
 
 const AIPromptGenerator: React.FC = () => {
-  const { user } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
+  if (!isLoaded || !isSignedIn || !user) return null;
+
+  // for profile user
+  const displayName = user.fullName || user.primaryEmailAddress?.emailAddress;
+  const avatarUrl = user.imageUrl;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { signOut } = useClerk();
 
   // for image upload
   const [image, setImage] = useState<string | null>(null);
@@ -39,6 +47,8 @@ const AIPromptGenerator: React.FC = () => {
   const [bgColor, setBgColor] = useState("#ffffff");
   const [hideBackgroundDots, setHideBackgroundDots] = useState(false);
   const [imageSize, setImageSize] = useState(1.0);
+
+  const navigate = useNavigate();
 
   // ----------------- Image Generation Functions -----------------
   const generateImage = async () => {
@@ -256,10 +266,14 @@ const AIPromptGenerator: React.FC = () => {
     <div id="mainBackground" className="w-full min-h-screen flex flex-col justify-center items-center text-white bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500">
 
       {/* title bar: fixed logo at top of screen with the back button*/}
-      <div id="topHeader" className="w-full flex items-center justify-between p-4 shadow-lg">
+      <div id="topHeader" className="w-full flex items-center justify-between px-4 py-2 shadow-lg">
 
         {/* back button*/}
-        <button id="backButton" className="flex items-center text-white text-lg hover:text-gray-300 bg-gray-700 px-4 py-2 rounded">
+        <button 
+          id="backButton"
+          onClick={() => navigate("/library")}
+          className="flex items-center text-white text-lg hover:text-gray-300 bg-pink-500 px-4 py-2 rounded-lg"
+        >
           <FaArrowCircleLeft className="mr-2" /> Back
         </button>
 
@@ -275,13 +289,44 @@ const AIPromptGenerator: React.FC = () => {
             <source src={logoVideo} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <h1 id="logoText" className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300">Aestheti-Qr</h1>
+          <h1 id="logoText" className="py-3 text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300">Aestheti-Qr</h1>
         </div>
 
         {/* profile section (incoming drop-down menu) */}
-        <div id="profileContainer" className="flex items-center">
-          <span id="username" className="mr-3 text-xl font-semibold">Name</span>
-          <div id="pfp" className="w-15 h-15 bg-gray-500 rounded-full"></div>
+        <div id="profileContainer" className="flex items-center space-x-3">
+          <span id="username" className="mr-3 text-2xl">{displayName}</span>
+          <img 
+              id="pfp"
+              src={avatarUrl}
+              alt="Me"
+              onClick={() => setMenuOpen(open => !open)} 
+              className="w-18 h-18 bg-gray-500 rounded-full cursor-pointer border-5 border-neutral-700"
+            />
+          {/* dropdown wrapper */}
+          <div className="relative">
+            {menuOpen && (
+              <div className="absolute right-0 top-8 w-42 bg-pink-400 rounded-lg shadow-lg z-10 text-lg">
+                <Link to="/dashboard" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
+                  Dashboard
+                </Link>
+                <Link to="/library" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
+                  Library
+                </Link>
+                <Link to="/whiteboard" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
+                  Whiteboard
+                </Link>
+                <Link to="/profile" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
+                  Profile
+                </Link>
+                <button
+                  onClick={async () => await signOut({ redirectUrl: "/" })}
+                  className="w-full text-left rounded-lg px-4 py-2 hover:bg-pink-200"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -412,7 +457,7 @@ const AIPromptGenerator: React.FC = () => {
                     onClick={downloadDefaultQRCode}
                     className="cursor-pointer w-full flex py-3 items-center justify-center bg-pink-500 hover:bg-pink-600 text-lg tracking-widest rounded-lg shadow-md"
                   >
-                    <FaSave className="mr-2" /> SAVE
+                    <FaDownload className="mr-2" /> DOWNLOAD
                   </button>
                 </div>
               </div>
