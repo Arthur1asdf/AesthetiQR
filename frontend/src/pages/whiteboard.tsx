@@ -1,9 +1,20 @@
+import { useClerk, useUser } from "@clerk/clerk-react";
 import React, { useRef, useEffect, useState } from "react";
 import { FaArrowCircleLeft, FaQrcode, FaPencilAlt, FaPen, FaEraser, FaFont, FaUndo, FaShapes, FaSave } from "react-icons/fa";
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import logoVideo from '../assets/logo.mp4';
 
 const Whiteboard: React.FC = () => {
+  const { user, isLoaded, isSignedIn } = useUser();
+  if (!isLoaded || !isSignedIn || !user) return null;
+
+  // for profile user
+  const displayName = user.fullName || user.primaryEmailAddress?.emailAddress;
+  const avatarUrl = user.imageUrl;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { signOut } = useClerk();
+
+  // for whiteboard
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [drawing, setDrawing] = useState(false);
   const [tool, setTool] = useState("pencil");
@@ -11,9 +22,9 @@ const Whiteboard: React.FC = () => {
   const [lineWidth, setLineWidth] = useState(4);
   const [text, setText] = useState("");
   const [history, setHistory] = useState<ImageData[]>([]);
-  //for tracking the position of the start of the shape to end
+  // for tracking the position of the start of the shape to end
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
-  //for tracking the image data of the canvas
+  // for tracking the image data of the canvas
   const [previewImage, setPreviewImage] = useState<ImageData | null>(null);
   const [shapeType, setShapeType] = useState<"rectangle" | "circle" | "triangle" | "heart" | "star">("rectangle");
 
@@ -200,22 +211,6 @@ const Whiteboard: React.FC = () => {
     ctx.fillText(text, e.nativeEvent.offsetX, e.nativeEvent.offsetY);
   };
 
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     setImage(file);
-  //     const canvas = canvasRef.current;
-  //     if (!canvas) return;
-  //     const ctx = canvas.getContext("2d");
-  //     if (!ctx) return;
-  //     const img = new Image();
-  //     img.src = URL.createObjectURL(file);
-  //     img.onload = () => {
-  //       ctx.drawImage(img, 50, 50, 200, 200);
-  //     };
-  //   }
-
-  // };
-
   const clearCanvas = () => {
     saveState();
     const canvas = canvasRef.current;
@@ -239,10 +234,14 @@ const Whiteboard: React.FC = () => {
   return (
     <div className="flex flex-col items-center bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500 h-screen w-full relative">
       {/* title bar: fixed logo at top of screen with the back button*/}
-      <div id="topHeader" className="w-full flex items-center justify-between p-4 shadow-lg">
+      <div id="topHeader" className="w-full flex items-center justify-between px-4 py-2 shadow-lg text-pink-200">
 
         {/* back button*/}
-        <button id="backButton" onClick={handleBackClick} className="flex items-center text-white text-lg hover:text-gray-300 bg-gray-700 px-4 py-2 rounded">
+        <button 
+          id="backButton"
+          onClick={handleBackClick}
+          className="flex items-center text-lg hover:text-gray-300 bg-pink-500 px-4 py-2 rounded-lg"
+        >
           <FaArrowCircleLeft className="mr-2" /> Back
         </button>
 
@@ -258,13 +257,44 @@ const Whiteboard: React.FC = () => {
             <source src={logoVideo} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <h1 id="logoText" className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300">Aestheti-Qr</h1>
+          <h1 id="logoText" className="py-3 text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300">Aestheti-Qr</h1>
         </div>
 
         {/* profile section (incoming drop-down menu) */}
-        <div id="profileContainer" className="flex items-center">
-          <span id="username" className="mr-3 text-xl font-semibold">Name</span>
-          <div id="pfp" className="w-15 h-15 bg-gray-500 rounded-full"></div>
+        <div id="profileContainer" className="flex items-center space-x-3">
+          <span id="username" className="mr-3 text-2xl">{displayName}</span>
+          <img 
+              id="pfp"
+              src={avatarUrl}
+              alt="Me"
+              onClick={() => setMenuOpen(open => !open)} 
+              className="w-18 h-18 bg-gray-500 rounded-full cursor-pointer border-5 border-neutral-700"
+            />
+          {/* dropdown wrapper */}
+          <div className="relative">
+            {menuOpen && (
+              <div className="absolute right-0 top-8 w-42 bg-pink-500 rounded-lg shadow-lg z-10 text-lg">
+                <Link to="/dashboard" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
+                  Dashboard
+                </Link>
+                <Link to="/library" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
+                  Library
+                </Link>
+                <Link to="/prompt" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
+                  QR Generation
+                </Link>
+                <Link to="/profile" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
+                  Profile
+                </Link>
+                <button
+                  onClick={async () => await signOut({ redirectUrl: "/" })}
+                  className="w-full text-left rounded-lg px-4 py-2 hover:bg-pink-200"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

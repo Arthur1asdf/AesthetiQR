@@ -305,7 +305,7 @@ const AIPromptGenerator: React.FC = () => {
           {/* dropdown wrapper */}
           <div className="relative">
             {menuOpen && (
-              <div className="absolute right-0 top-8 w-42 bg-pink-400 rounded-lg shadow-lg z-10 text-lg">
+              <div className="absolute right-0 top-8 w-42 bg-pink-500 rounded-lg shadow-lg z-10 text-lg">
                 <Link to="/dashboard" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
                   Dashboard
                 </Link>
