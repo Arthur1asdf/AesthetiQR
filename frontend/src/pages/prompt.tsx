@@ -35,9 +35,13 @@ const AIPromptGenerator: React.FC = () => {
   const customCanvasRef = useRef<HTMLDivElement | null>(null);
   const customQRCodeRef = useRef<QRCodeStyling | null>(null);
 
-  // for qr backend save
+  // for custom qr backend save
   const [qrName, setQrName] = useState("");
   const [showNameInput, setShowNameInput] = useState(false);
+
+  // for default qr backend save
+  const [defaultName, setDefaultName] = useState("");
+  const [namingDefault, setNamingDefault] = useState(false);
 
   // some set initial customizations for qr
   const [dotsShape, setDotsShape] = useState("square");
@@ -197,14 +201,52 @@ const AIPromptGenerator: React.FC = () => {
   };
 
   // download functions for QR codes
-  const downloadDefaultQRCode = () => {
+  const downloadDefaultQRCode = async () => {
     defaultQRCodeRef.current?.download({ name: "qrcode", extension: "png" });
-  };
+  };  
 
-  const downloadCustomQRCode = () => {
+  const downloadCustomQRCode = async () => {
     customQRCodeRef.current?.download({ name: "custom_qrcode", extension: "png" });
   };
 
+  // save qr to backend
+  const saveDefaultQRCode = async () => {
+    if (!user) return alert("Not signed in");
+
+    if (!defaultQRCodeRef.current) return alert("Generate the default QR first!");
+
+    if (!defaultName.trim()) return alert("Name your QR code! C:");
+    
+    try {
+      // grab the fresh png blob
+      const blob: Blob = await defaultQRCodeRef.current.getRawData("png");
+
+      // convert to dataURL
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () =>
+          typeof reader.result === "string"
+            ? resolve(reader.result)
+            : reject("Failed to read blob");
+        reader.readAsDataURL(blob);
+      });
+  
+      // post with supplied qr name
+      await axios.post("http://localhost:3000/api/qrcode/addQrcode", {
+        userId: user.id,
+        qrcodeUrl: dataUrl,
+        qrcodeName: defaultName || "default_qrcode",
+      });
+  
+      alert("Default QR saved!");
+      setNamingDefault(false);
+      setDefaultName("");
+    } catch (err) {
+      console.error(err);
+      alert("Save QR failed.");
+    }
+  };
+  
   const saveCustomQRCode = async () => {
     if (!user) return alert("Not signed in");
 
@@ -272,7 +314,7 @@ const AIPromptGenerator: React.FC = () => {
         <button 
           id="backButton"
           onClick={() => navigate("/library")}
-          className="flex items-center text-white text-lg hover:text-gray-300 bg-pink-500 px-4 py-2 rounded-lg"
+          className="cursor-pointer flex items-center text-white text-lg hover:text-gray-300 bg-pink-500 px-4 py-2 rounded-lg"
         >
           <FaArrowCircleLeft className="mr-2" /> Back
         </button>
@@ -351,10 +393,10 @@ const AIPromptGenerator: React.FC = () => {
                 ></textarea>
 
                 {/* generate image button */}
-                <div className="mt-2 bg-gray-900 p-1 rounded-lg shadow-md">
+                <div className="mt-2 rounded-lg shadow-md">
                   <button
                     onClick={generateImage}
-                    className="cursor-pointer w-full flex py-2 rounded items-center justify-center text-lg bg-blue-500 hover:bg-blue-600"
+                    className="cursor-pointer w-full flex py-3 rounded items-center justify-center border-4 text-lg bg-blue-500 hover:bg-blue-600"
                     disabled={loading}
                   >
                     {loading ? "Generating..." : "Generate Image"}
@@ -381,7 +423,7 @@ const AIPromptGenerator: React.FC = () => {
                     id="saveGenImgBtn"
                     onClick={downloadImage}
                     disabled={!imageUrl}
-                    className="cursor-pointer w-full flex py-3 items-center justify-center bg-pink-500 hover:bg-pink-600 text-lg tracking-widest rounded-lg transition"
+                    className="cursor-pointer w-full flex py-3 items-center justify-center border-4 bg-pink-500 hover:bg-pink-600 text-lg tracking-widest rounded-lg transition"
                   >
                     <FaSave className="mr-2" /> SAVE
                   </button>
@@ -397,8 +439,8 @@ const AIPromptGenerator: React.FC = () => {
               <div id="imgUploadContainerLeft">
                 <label id="uploadLabel" className="block text-xl mb-3 text-black">UPLOAD AN IMAGE:</label>
                 {/* image upload button */}
-                <div className="flex-1 bg-gray-900 p-1 rounded-lg shadow-lg flex items-center justify-center">
-                  <label className="cursor-pointer px-6 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 w-full text-lg text-center">Upload Image
+                <div className="flex-1 rounded-lg shadow-lg flex items-center justify-center">
+                  <label className="cursor-pointer px-6 py-2 border-4 rounded-lg bg-blue-500 hover:bg-blue-600 w-full text-lg text-center">Upload Image
                     <input 
                       type="file" 
                       accept="image/*" 
@@ -431,9 +473,9 @@ const AIPromptGenerator: React.FC = () => {
                 />
 
                 {/* generate QR Code from upload image */}
-                <div className="flex-1 bg-gray-900 p-1 mt-5 rounded-lg shadow-lg flex items-center justify-center">
+                <div className="flex-1 mt-5 rounded-lg shadow-lg flex items-center justify-center">
                   <button 
-                    className="cursor-pointer px-6 py-3 rounded-lg bg-green-500 hover:bg-green-600 w-full text-lg"
+                    className="cursor-pointer px-6 py-3 border-4 rounded-lg bg-green-500 hover:bg-green-600 w-full text-lg"
                     onClick={generateDefaultQRCode}
                   >
                     Generate QR Code
@@ -441,24 +483,55 @@ const AIPromptGenerator: React.FC = () => {
                 </div>
               </div>
 
-              {/* right side: display QR code */}
+              {/* right side: display defualt QR code */}
               <div id="imgUploadContainerRight" className="flex-1 flex flex-col items-center">
                 
                 <label id="qrLabel" className="block text-2xl text-pink-500 mt-23">👾YOUR GENERATED QR👾</label>
-                {/* display qr code */}
+                {/* display default qr code */}
                 <div ref={defaultCanvasRef} className="w-80 h-80 mt-5 border-2 border-gray-600 rounded-lg flex items-center justify-center bg-white">
                   {/* QR Code will be rendered here */}
                 </div>
 
-                {/* save qr code */}
-                <div className="w-64 bg-gray-900 mt-4 p-1 rounded-lg shadow-lg">
+                {/* download qr code */}
+                <div className="w-64 mt-4 rounded-lg shadow-lg">
                   <button 
-                    id="saveQrBtn" 
+                    id="downloadQrBtn" 
                     onClick={downloadDefaultQRCode}
-                    className="cursor-pointer w-full flex py-3 items-center justify-center bg-pink-500 hover:bg-pink-600 text-lg tracking-widest rounded-lg shadow-md"
+                    className="cursor-pointer w-full flex py-2 items-center justify-center border-4 bg-pink-500 hover:bg-pink-600 text-lg tracking-widest rounded-lg shadow-md"
                   >
                     <FaDownload className="mr-2" /> DOWNLOAD
                   </button>
+                </div>
+
+                {/* save to backend */}
+                <div className="w-64 mt-4 rounded-lg shadow-lg">
+                  {!namingDefault ? (
+                    <button 
+                      id="saveQrBtn" 
+                      onClick={() => setNamingDefault(true)}
+                      className="cursor-pointer w-full flex py-2 items-center justify-center border-4 bg-pink-500 hover:bg-pink-600 text-lg tracking-widest rounded-lg shadow-md"
+                    >
+                      <FaSave className="mr-2" /> SAVE
+                    </button>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        value={defaultName}
+                        onChange={e => setDefaultName(e.target.value)}
+                        placeholder="Enter QR name"
+                        className="w-full p-2 mb-2 border rounded"
+                      />
+                      <button
+                        onClick={saveDefaultQRCode}
+                        className="cursor-pointer w-full flex py-2 items-center justify-center border-4 bg-pink-500 hover:bg-pink-600 text-lg tracking-widest rounded-lg shadow-md"
+                      >
+                        Confirm SAVE
+                      </button>
+                    </>
+                    
+                  )}
+                  
                 </div>
               </div>
             </div> {/* end of image upload container */}  
@@ -571,7 +644,7 @@ const AIPromptGenerator: React.FC = () => {
                 {/* Generate QR Code from upload image */}
                 <div className="flex-1 bg-black p-1 mt-5 rounded-lg shadow-lg items-center">
                   <button 
-                    className="cursor-pointer bg-green-500 text-white text-2xl px-6 py-2 rounded-lg hover:bg-green-600 w-full"
+                    className="cursor-pointer bg-green-500 text-white text-2xl px-6 py-3 border-4 rounded-lg hover:bg-green-600 w-full"
                     onClick={updateCustomizedQRCode}
                   >
                     Generate QR Code
@@ -590,7 +663,7 @@ const AIPromptGenerator: React.FC = () => {
                 <div className="flex space-x-4 w-full mt-4">
                   {/* download only */}
                   <button 
-                    id="saveQrBtn" 
+                    id="downloadQrBtn" 
                     onClick={downloadCustomQRCode}
                     className="cursor-pointer flex-1 flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white text-2xl py-3 rounded-lg shadow-md"
                   >
@@ -615,7 +688,7 @@ const AIPromptGenerator: React.FC = () => {
                         className="p-2 border rounded-lg"
                       />
                       <button 
-                        id="saveQrBtn" 
+                        id="confirmSaveQrBtn" 
                         onClick={saveCustomQRCode}
                         className="cursor-pointer flex-1 flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white text-2xl py-3 rounded-lg shadow-md"
                       >

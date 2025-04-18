@@ -234,7 +234,7 @@ const Whiteboard: React.FC = () => {
   return (
     <div className="flex flex-col items-center bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500 h-screen w-full relative">
       {/* title bar: fixed logo at top of screen with the back button*/}
-      <div id="topHeader" className="w-full flex items-center justify-between px-4 py-2 shadow-lg text-pink-200">
+      <div id="topHeader" className="w-full flex items-center justify-between px-4 py-2 shadow-lg text-white">
 
         {/* back button*/}
         <button 

@@ -1,6 +1,6 @@
 import { useClerk, useUser } from "@clerk/clerk-react";
 import React, { useState } from "react";
-import { FaThLarge, FaClipboard, FaArrowCircleLeft } from "react-icons/fa";
+import { FaThLarge, FaClipboard, FaArrowCircleLeft, FaQrcode } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
 import logoVideo from "../assets/logo.mp4";
 
@@ -31,87 +31,96 @@ const LibraryPage: React.FC = () => {
   const navigateToWhiteboard = () => navigate("/whiteboard");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500 flex px-6 py-10">
-      {/* Left Sidebar */}
-      <div className="flex flex-col items-start mr-6 space-y-6">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="flex items-center text-white text-lg hover:text-gray-300 bg-gray-700 px-4 py-2 rounded"
+    <div className="w-full min-h-screen flex flex-col items-center text-white bg-gradient-to-br from-purple-700 via-pink-600 to-blue-500">
+      {/* title bar: fixed logo at top of screen with the back button*/}
+      <div id="topHeader" className="w-full flex items-center justify-between px-4 py-2 shadow-lg">
+
+        {/* back button*/}
+        <button 
+          id="backButton"
+          onClick={navigateToHome}
+          className="flex items-center text-white text-lg hover:text-gray-300 bg-pink-500 px-4 py-2 rounded-lg"
         >
           <FaArrowCircleLeft className="mr-2" /> Back
         </button>
 
-        {/* Sidebar */}
-        <div className="w-52 bg-black bg-opacity-10 p-4 rounded-2xl shadow-lg">
-          <h2 className="text-xl text-white mb-4">Navigation</h2>
-          <button
-            onClick={navigateToHome}
-            className="w-full bg-purple-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-purple-700 mb-3"
+        {/* logo */}
+        <div id="logoContainer" className="flex items-center">
+          <video 
+            className="w-16 h-16 rounded-full object-cover mr-4"
+            autoPlay 
+            loop 
+            muted 
+            playsInline
           >
-            <FaThLarge /> Home
-          </button>
-          <button
-            onClick={navigateToWhiteboard}
-            className="w-full bg-pink-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-pink-600"
-          >
-            <FaClipboard /> Whiteboard
-          </button>
+            <source src={logoVideo} type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <h1 id="logoText" className="py-3 text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300">Aestheti-Qr</h1>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center w-full">
-        {/* Top Bar */}
-        <div className="w-full flex items-center justify-between mb-10">
-          {/* Logo */}
-          <div className="flex items-center">
-            <video
-              className="w-16 h-16 rounded-full object-cover mr-4"
-              autoPlay
-              loop
-              muted
-              playsInline
-            >
-              <source src={logoVideo} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-            <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300">
-              Aestheti-Qr
-            </h1>
-          </div>
-
-          {/* Profile Section */}
-          <div className="relative flex items-center space-x-3">
-            <span className="text-xl font-semibold text-white">{displayName}</span>
-            <img
+        {/* profile section (incoming drop-down menu) */}
+        <div id="profileContainer" className="flex items-center space-x-3">
+          <span id="username" className="mr-3 text-2xl">{displayName}</span>
+          <img 
+              id="pfp"
               src={avatarUrl}
-              alt="Profile"
-              onClick={() => setMenuOpen(prev => !prev)}
-              className="w-14 h-14 bg-gray-500 rounded-full cursor-pointer border-4 border-neutral-700"
+              alt="Me"
+              onClick={() => setMenuOpen(open => !open)} 
+              className="w-18 h-18 bg-gray-500 rounded-full cursor-pointer border-5 border-neutral-700"
             />
+          {/* dropdown wrapper */}
+          <div className="relative">
             {menuOpen && (
-              <div className="absolute right-0 top-16 w-48 bg-pink-400 rounded-lg shadow-lg z-10 text-lg">
+              <div className="absolute right-0 top-8 w-42 bg-pink-500 rounded-lg shadow-lg z-10 text-lg">
                 <Link to="/dashboard" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
                   Dashboard
                 </Link>
-                <Link to="/library" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
-                  Library
-                </Link>
                 <Link to="/whiteboard" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
                   Whiteboard
+                </Link>
+                <Link to="/prompt" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
+                  QR Generation
                 </Link>
                 <Link to="/profile" className="block rounded-lg px-4 py-2 hover:bg-pink-200">
                   Profile
                 </Link>
                 <button
-                  onClick={() => signOut()}
+                  onClick={async () => await signOut({ redirectUrl: "/" })}
                   className="w-full text-left rounded-lg px-4 py-2 hover:bg-pink-200"
                 >
                   Sign Out
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex w-full space-x-1 p-2">
+        {/* Sidebar */}
+        <div className="flex flex-col items-start mr-6 space-y-6">
+          <div className="w-52 bg-black bg-opacity-10 p-4 rounded-2xl shadow-lg">
+            <h2 className="text-xl text-white mb-4">Navigation</h2>
+            <button
+              onClick={navigateToHome}
+              className="w-full bg-purple-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-purple-700 mb-3"
+            >
+              <FaThLarge /> Home
+            </button>
+            <button
+              onClick={navigateToWhiteboard}
+              className="w-full bg-pink-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-pink-600 mb-3"
+            >
+              <FaClipboard /> Whiteboard
+            </button>
+            <button
+              onClick={() => navigate("/prompt")}
+              className="w-full bg-pink-500 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-pink-600"
+            >
+              <FaQrcode /> QR Generation
+            </button>
           </div>
         </div>
 
