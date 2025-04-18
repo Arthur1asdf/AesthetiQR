@@ -1,36 +1,25 @@
 import { useState, useEffect } from "react";
-import {
-  FiSearch,
-  FiUser,
-  FiLogIn,
-  FiPlus,
-  FiArrowRight,
-} from "react-icons/fi";
+import { FiSearch, FiUser, FiLogIn, FiPlus, FiArrowRight } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 import logoVideo from "../assets/logo.mp4"; // Adjust the path based on your file structure
 import { SignedIn, SignedOut, useSession } from "@clerk/clerk-react";
+import image1 from "../assets/1.png";
+import image2 from "../assets/2.png";
+import image3 from "../assets/3.png";
+import image4 from "../assets/4.png";
+import image5 from "../assets/5.png";
+import image6 from "../assets/6.png";
 
 // Define TypeScript interfaces
 interface Template {
   id: number;
   title: string;
   description: string;
+  imageUrl: string;
 }
 
-const TemplateCard = ({
-  id,
-  title,
-  description,
-  selected,
-  onClick,
-}: {
-  id: number;
-  title: string;
-  description: string;
-  selected: boolean;
-  onClick: () => void;
-}) => (
+const TemplateCard = ({ id, title, description, imageUrl, selected, onClick }: { id: number; title: string; description: string; imageUrl: string; selected: boolean; onClick: () => void }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -42,21 +31,11 @@ const TemplateCard = ({
     <div className="absolute inset-0 bg-noise opacity-10" />
     <div className="relative z-10">
       <div className="h-40 bg-white/10 backdrop-blur-sm rounded-lg mb-4 flex items-center justify-center">
-        <motion.div
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center"
-        >
-          <div className="w-16 h-16 bg-gradient-to-br from-pink-300 to-blue-300 rounded-full" />
-        </motion.div>
+        <img src={imageUrl} alt={title} className="h-full object-cover" />
       </div>
       <h3 className="text-white font-bold text-lg">{title}</h3>
       <p className="text-white/80 text-sm">{description}</p>
-      <motion.div
-        initial={{ opacity: 0, x: -10 }}
-        animate={{ opacity: selected ? 1 : 0, x: selected ? 0 : -10 }}
-        className="flex items-center mt-2 text-white/90"
-      >
+      <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: selected ? 1 : 0, x: selected ? 0 : -10 }} className="flex items-center mt-2 text-white/90">
         <FiArrowRight className="mr-1" />
         <span className="text-xs">Selected</span>
       </motion.div>
@@ -77,18 +56,16 @@ const HomePage = () => {
   }, []);
 
   const toggleTemplate = (id: number) => {
-    setSelectedTemplates((prev) =>
-      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id],
-    );
+    setSelectedTemplates((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
   };
 
   const templates: Template[] = [
-    { id: 1, title: "Neon Glow", description: "Vibrant neon QR design" },
-    { id: 2, title: "Cyber Pink", description: "Cyberpunk aesthetic" },
-    { id: 3, title: "Purple Haze", description: "Dreamy gradient effect" },
-    { id: 4, title: "Aqua Dream", description: "Ocean-inspired colors" },
-    { id: 5, title: "Crystal Blue", description: "Clean techy look" },
-    { id: 6, title: "Soft Gradient", description: "Pastel color blend" },
+    { id: 1, title: "Soft Petal Pink Blossom", description: "Pastel floral vibe", imageUrl: image1 },
+    { id: 2, title: "Crispy Yellow Crunch", description: "Bold and crunchy", imageUrl: image2 },
+    { id: 3, title: "Earthly Brown Leather Walk", description: "Stylish earthy tones", imageUrl: image3 },
+    { id: 4, title: "Forehead Bold", description: "Oceanic color mix", imageUrl: image4 },
+    { id: 5, title: "Cinnamonroll Blue Dream", description: "Soft blue theme", imageUrl: image5 },
+    { id: 6, title: "Playful Fawn Kitten", description: "Adorable pastel hues", imageUrl: image6 },
   ];
 
   if (isLoading) {
@@ -111,19 +88,9 @@ const HomePage = () => {
       {/* Main Content */}
       <main className="relative z-10 max-w-7xl mx-auto p-6">
         {/* Header with Auth */}
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4"
-        >
+        <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
           <div className="flex items-center gap-3">
-            <video
-              className="w-16 h-16 rounded-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-            >
+            <video className="w-16 h-16 rounded-full object-cover" autoPlay loop muted playsInline>
               <source src={logoVideo} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
@@ -189,12 +156,7 @@ const HomePage = () => {
         {/* Template Section */}
         <section className="mt-12">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-            <motion.h2
-              className="text-2xl font-bold"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
+            <motion.h2 className="text-2xl font-bold" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
               Featured Templates
             </motion.h2>
 
@@ -219,6 +181,7 @@ const HomePage = () => {
                   id={template.id}
                   title={template.title}
                   description={template.description}
+                  imageUrl={template.imageUrl}
                   selected={selectedTemplates.includes(template.id)}
                   onClick={() => toggleTemplate(template.id)}
                 />
