@@ -1,30 +1,76 @@
 import { useClerk, useUser } from "@clerk/clerk-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaThLarge, FaClipboard, FaArrowCircleLeft, FaQrcode } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
 import logoVideo from "../assets/logo.mp4";
+import axios from "axios";
+
+interface QRCode {
+  _id: string;
+  imageUrl: string;
+  qrcodeName?: string;
+}
 
 const LibraryPage: React.FC = () => {
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState<boolean>(false);
-
   // Use Clerk's useUser hook to access user data
   const { user, isLoaded, isSignedIn } = useUser();
   const { signOut } = useClerk();
 
-  if (!isLoaded) {
-    return <div>Loading...</div>; // Loading state while Clerk is loading user info
-  }
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+   // for loading qr codes
+   const [qrCodes, setQrCodes] = useState<QRCode[]>([]);
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState<string | null>(null);
 
-  // If not signed in, redirect to sign-in page
-  if (!isSignedIn) {
-    navigate("/sign-in");
-    return null;
-  }
+  useEffect(() => {
+    if (!isLoaded && !isSignedIn) {
+      navigate("/login");
+    }
+  }, [isLoaded, isSignedIn, navigate]);
+
+  // Fetch your QR codes
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+
+    const fetchQRCodes = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        // POST to getQrcodeAll
+        const res = await axios.post("http://localhost:3000/api/qrcode/getQrcodeAll", {
+          userId: user.id,
+          random: false,
+        });
+
+        // GET via searchQrcode
+        // const res = await axios.get("/api/qr/searchQrcode", {
+        //   params: { userId: user.id },
+        // });
+
+        if (res.data.success) {
+          setQrCodes(res.data.data);
+        } else {
+          throw new Error(res.data.error || "Unknown error");
+        }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQRCodes();
+  }, [isLoaded, user]);
+
+  if (loading) return <p className="text-center text-white">Loading your library…</p>;
+  if (error) return <p className="text-center text-red-400">Error: {error}</p>;
 
   // Accessing user details from Clerk
-  const displayName = user.fullName || user.primaryEmailAddress?.emailAddress || "User";
-  const avatarUrl = user.imageUrl || "/default-avatar.png"; // Fallback to a default image if not set
+  const displayName = user
+    ? user.fullName || user.primaryEmailAddress?.emailAddress || "User"
+    : "User";
+  const avatarUrl = user?.imageUrl || "/default-avatar.png";
 
   // Navigation actions
   const navigateToHome = () => navigate("/dashboard");
@@ -98,9 +144,9 @@ const LibraryPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex w-full space-x-1 p-2">
+      <div className="flex w-full space-x-1 p-3">
         {/* Sidebar */}
-        <div className="flex flex-col items-start mr-6 space-y-6">
+        <div className="flex flex-col items-start mr-2 space-y-6">
           <div className="w-52 bg-black bg-opacity-10 p-4 rounded-2xl shadow-lg">
             <h2 className="text-xl text-white mb-4">Navigation</h2>
             <button
@@ -128,15 +174,26 @@ const LibraryPage: React.FC = () => {
         <div className="w-full bg-black bg-opacity-10 p-8 rounded-2xl shadow-lg">
           <h1 className="text-4xl font-bagel text-center text-white mb-6">Your Library</h1>
           <h2 className="text-2xl text-gray-300 mb-6 text-center">Your Saved Templates</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div
-                key={i}
-                className="bg-gray-900 p-6 rounded-lg shadow-lg text-white text-center"
-              >
-                Template {i + 1}
-              </div>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 md:grid-cols-3 justify-center gap-8">
+            {qrCodes.length === 0 ? (
+              <p className="col-span-full text-center text-gray-400">
+                You haven't saved any QR codes yet.
+              </p>           
+            ) : (
+              qrCodes.map((code) => (
+                <div
+                  key={code._id}
+                  className="w-64 bg-pink-400 p-2 rounded-lg shadow-lg text-white text-center flex flex-col items-center"
+                >
+                  <img
+                    src={code.imageUrl}
+                    alt={code.qrcodeName || "QR Code"}
+                    className="w-full h-auto mb-4 object-contain"
+                  />
+                  {code.qrcodeName && <p className="mt-2">{code.qrcodeName}</p>}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
